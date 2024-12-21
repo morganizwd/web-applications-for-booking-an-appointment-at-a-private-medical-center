@@ -8,13 +8,21 @@ class DoctorController {
     // Регистрация нового врача
     async registration(req, res) {
         try {
-            const { login, password, firstName, lastName, specialization } = req.body;
+            console.log('req.body:', req.body); // Добавьте для отладки
+            console.log('req.file:', req.file); // Добавьте для отладки
+
+            const { login, password, firstName, lastName, specialization, departmentId } = req.body;
 
             // Проверка наличия обязательных полей
             if (!login || !password || !firstName || !lastName || !specialization) {
                 return res.status(400).json({ message: 'Необходимы логин, пароль, имя, фамилия и специализация' });
             }
 
+            // Проверка, что departmentId не пуст
+            if (!departmentId) {
+                return res.status(400).json({ message: 'Необходимо указать departmentId' });
+            }
+            
             // Проверка на существование врача с таким же логином
             const existingDoctor = await Doctor.findOne({ where: { login } });
             if (existingDoctor) {
@@ -45,6 +53,7 @@ class DoctorController {
                 lastName,
                 specialization,
                 photo: photoPath,
+                departmentId: parseInt(departmentId, 10),
             });
 
             res.status(201).json({

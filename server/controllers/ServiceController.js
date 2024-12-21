@@ -13,12 +13,24 @@ class ServiceController {
                 return res.status(400).json({ errors: errors.array() });
             }
 
-            const { name, price } = req.body;
+            const { name, price, departmentId } = req.body; // Добавляем departmentId
+            console.log('Создание услуги с departmentId:', departmentId); // Для отладки
 
             // Проверка на существование услуги с таким же названием
             const existingService = await Service.findOne({ where: { name } });
             if (existingService) {
                 return res.status(400).json({ message: 'Услуга с таким названием уже существует' });
+            }
+
+            // Проверка существования отделения
+            const parsedDepartmentId = parseInt(departmentId, 10);
+            if (isNaN(parsedDepartmentId)) {
+                return res.status(400).json({ message: 'Неверный ID отделения' });
+            }
+
+            const department = await Department.findByPk(parsedDepartmentId);
+            if (!department) {
+                return res.status(400).json({ message: 'Отделение не найдено' });
             }
 
             // Обработка загрузки фото
@@ -37,6 +49,7 @@ class ServiceController {
             const service = await Service.create({
                 name,
                 price,
+                departmentId: parsedDepartmentId, // Устанавливаем departmentId
                 photo: photoPath,
             });
 
@@ -44,6 +57,7 @@ class ServiceController {
                 id: service.id,
                 name: service.name,
                 price: service.price,
+                departmentId: service.departmentId,
                 photo: service.photo,
                 createdAt: service.createdAt,
                 updatedAt: service.updatedAt,
@@ -98,21 +112,21 @@ class ServiceController {
     // Обновление данных услуги
     async update(req, res) {
         try {
-            const { name, price } = req.body;
+            const { name, price, departmentId } = req.body;
             const serviceId = req.params.id;
-
+    
             // Валидация входных данных
             const errors = validationResult(req);
             if (!errors.isEmpty()) {
                 return res.status(400).json({ errors: errors.array() });
             }
-
+    
             // Поиск услуги по ID
             const service = await Service.findByPk(serviceId);
             if (!service) {
                 return res.status(404).json({ message: 'Услуга не найдена' });
             }
-
+    
             // Проверка на существование услуги с таким же названием (если имя меняется)
             if (name && name !== service.name) {
                 const existingService = await Service.findOne({ where: { name } });
@@ -120,9 +134,29 @@ class ServiceController {
                     return res.status(400).json({ message: 'Услуга с таким названием уже существует' });
                 }
             }
-
-            let updatedData = { name: name || service.name, price: price || service.price };
-
+    
+            // Проверка существования отделения, если departmentId передан
+            if (departmentId) {
+                const parsedDepartmentId = parseInt(departmentId, 10);
+                if (isNaN(parsedDepartmentId)) {
+                    return res.status(400).json({ message: 'Неверный ID отделения' });
+                }
+    
+                const department = await Department.findByPk(parsedDepartmentId);
+                if (!department) {
+                    return res.status(400).json({ message: 'Отделение не найдено' });
+                }
+            }
+    
+            let updatedData = { 
+                name: name || service.name, 
+                price: price !== undefined ? parseFloat(price) : service.price 
+            };
+    
+            if (departmentId) {
+                updatedData.departmentId = parseInt(departmentId, 10);
+            }
+    
             // Обработка загрузки нового фото
             if (req.file) {
                 const uploadDir = path.join(__dirname, '../uploads/services');
@@ -133,7 +167,7 @@ class ServiceController {
                 const photoPath = `/uploads/services/${filename}`;
                 fs.writeFileSync(path.join(uploadDir, filename), req.file.buffer);
                 updatedData.photo = photoPath;
-
+    
                 // Опционально: удаление старого фото
                 if (service.photo) {
                     const oldPhotoPath = path.join(__dirname, '..', service.photo);
@@ -142,14 +176,15 @@ class ServiceController {
                     }
                 }
             }
-
+    
             // Обновление данных услуги
             await service.update(updatedData);
-
+    
             res.json({
                 id: service.id,
                 name: service.name,
                 price: service.price,
+                departmentId: service.departmentId,
                 photo: service.photo,
                 createdAt: service.createdAt,
                 updatedAt: service.updatedAt,

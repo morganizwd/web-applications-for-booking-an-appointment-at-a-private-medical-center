@@ -49,7 +49,6 @@ const Patient = sequelize.define('Patient', {
         type: DataTypes.STRING,
         allowNull: false,
         validate: {
-            isAlpha: true,
             len: [2, 50],
         },
     },
@@ -57,7 +56,6 @@ const Patient = sequelize.define('Patient', {
         type: DataTypes.STRING,
         allowNull: false,
         validate: {
-            isAlpha: true,
             len: [2, 50],
         },
     },
@@ -110,7 +108,6 @@ const Doctor = sequelize.define('Doctor', {
         type: DataTypes.STRING,
         allowNull: false,
         validate: {
-            isAlpha: true,
             len: [2, 50],
         },
     },
@@ -118,7 +115,6 @@ const Doctor = sequelize.define('Doctor', {
         type: DataTypes.STRING,
         allowNull: false,
         validate: {
-            isAlpha: true,
             len: [2, 50],
         },
     },
@@ -292,12 +288,18 @@ const Appointment = sequelize.define('Appointment', {
 
 // Doctor - Department
 Doctor.belongsTo(Department, {
-    foreignKey: { allowNull: false },
+    foreignKey: {
+        name: 'departmentId', // <--- ЯВНО указываем имя внешнего ключа
+        allowNull: false,
+    },
     onDelete: 'CASCADE',
     onUpdate: 'CASCADE',
 });
 Department.hasMany(Doctor, {
-    foreignKey: { allowNull: false },
+    foreignKey: {
+        name: 'departmentId', // <--- То же самое
+        allowNull: false,
+    },
     onDelete: 'CASCADE',
     onUpdate: 'CASCADE',
 });
@@ -338,14 +340,19 @@ Appointment.belongsTo(Patient, {
     onUpdate: 'CASCADE',
 });
 
-// Service - Department
 Service.belongsTo(Department, {
-    foreignKey: { allowNull: false },
+    foreignKey: {
+        name: 'departmentId', // Явно указываем имя внешнего ключа
+        allowNull: false,
+    },
     onDelete: 'CASCADE',
     onUpdate: 'CASCADE',
 });
 Department.hasMany(Service, {
-    foreignKey: { allowNull: false },
+    foreignKey: {
+        name: 'departmentId', // Явно указываем имя внешнего ключа
+        allowNull: false,
+    },
     onDelete: 'CASCADE',
     onUpdate: 'CASCADE',
 });

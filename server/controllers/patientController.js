@@ -8,6 +8,9 @@ class PatientController {
     // Регистрация нового пациента
     async registration(req, res) {
         try {
+            console.log('req.body:', req.body);
+            console.log('req.file:', req.file);
+
             const { login, password, firstName, lastName, phoneNumber, address, age } = req.body;
 
             // Проверка наличия обязательных полей
@@ -49,21 +52,26 @@ class PatientController {
                 photo: photoPath,
             });
 
-            res.status(201).json({
-                id: patient.id,
-                login: patient.login,
-                firstName: patient.firstName,
-                lastName: patient.lastName,
-                phoneNumber: patient.phoneNumber,
-                address: patient.address,
-                age: patient.age,
-                photo: patient.photo,
-                createdAt: patient.createdAt,
-                updatedAt: patient.updatedAt,
+            return res.status(201).json({
+                // Вместо простых полей — вернём нужный JSON
+                patient: {
+                    id: patient.id,
+                    login: patient.login,
+                    firstName: patient.firstName,
+                    lastName: patient.lastName,
+                    phoneNumber: patient.phoneNumber,
+                    address: patient.address,
+                    age: patient.age,
+                    photo: patient.photo,
+                    createdAt: patient.createdAt,
+                    updatedAt: patient.updatedAt,
+                },
+                // Если хотите сразу отдавать токен после регистрации, 
+                // можно добавить логику ниже. Иначе уберите это поле
             });
         } catch (error) {
             console.error('Ошибка при регистрации пациента:', error);
-            res.status(500).json({ message: 'Ошибка сервера' });
+            return res.status(500).json({ message: 'Ошибка сервера' });
         }
     }
 
@@ -96,10 +104,25 @@ class PatientController {
                 { expiresIn: '24h' }
             );
 
-            res.json({ token, patientId: patient.id });
+            // ВАЖНО: Отдаём именно { token, patient: {...} }
+            return res.json({
+                token,
+                patient: {
+                    id: patient.id,
+                    login: patient.login,
+                    firstName: patient.firstName,
+                    lastName: patient.lastName,
+                    phoneNumber: patient.phoneNumber,
+                    address: patient.address,
+                    age: patient.age,
+                    photo: patient.photo,
+                    createdAt: patient.createdAt,
+                    updatedAt: patient.updatedAt,
+                },
+            });
         } catch (error) {
             console.error('Ошибка при входе пациента:', error);
-            res.status(500).json({ message: 'Ошибка сервера' });
+            return res.status(500).json({ message: 'Ошибка сервера' });
         }
     }
 
@@ -119,21 +142,23 @@ class PatientController {
                 return res.status(404).json({ message: 'Пациент не найден' });
             }
 
-            res.json({
-                id: patient.id,
-                login: patient.login,
-                firstName: patient.firstName,
-                lastName: patient.lastName,
-                phoneNumber: patient.phoneNumber,
-                address: patient.address,
-                age: patient.age,
-                photo: patient.photo,
-                createdAt: patient.createdAt,
-                updatedAt: patient.updatedAt,
+            return res.json({
+                patient: {
+                    id: patient.id,
+                    login: patient.login,
+                    firstName: patient.firstName,
+                    lastName: patient.lastName,
+                    phoneNumber: patient.phoneNumber,
+                    address: patient.address,
+                    age: patient.age,
+                    photo: patient.photo,
+                    createdAt: patient.createdAt,
+                    updatedAt: patient.updatedAt,
+                },
             });
         } catch (error) {
             console.error('Ошибка при аутентификации пациента:', error);
-            res.status(500).json({ message: 'Ошибка сервера' });
+            return res.status(500).json({ message: 'Ошибка сервера' });
         }
     }
 
@@ -141,15 +166,15 @@ class PatientController {
     async findOne(req, res) {
         try {
             const patient = await Patient.findByPk(req.params.id, {
-                attributes: { exclude: ['password'] }, // Исключаем пароль из ответа
+                attributes: { exclude: ['password'] },
             });
             if (!patient) {
                 return res.status(404).json({ message: 'Пациент не найден' });
             }
-            res.json(patient);
+            return res.json(patient);
         } catch (error) {
             console.error('Ошибка при получении пациента:', error);
-            res.status(500).json({ message: 'Ошибка сервера' });
+            return res.status(500).json({ message: 'Ошибка сервера' });
         }
     }
 
@@ -157,12 +182,12 @@ class PatientController {
     async findAll(req, res) {
         try {
             const patients = await Patient.findAll({
-                attributes: { exclude: ['password'] }, // Исключаем пароли из ответа
+                attributes: { exclude: ['password'] },
             });
-            res.json(patients);
+            return res.json(patients);
         } catch (error) {
             console.error('Ошибка при получении списка пациентов:', error);
-            res.status(500).json({ message: 'Ошибка сервера' });
+            return res.status(500).json({ message: 'Ошибка сервера' });
         }
     }
 
@@ -211,24 +236,25 @@ class PatientController {
                 }
             }
 
-            // Обновление данных пациента
             await patient.update(updatedData);
 
-            res.json({
-                id: patient.id,
-                login: patient.login,
-                firstName: patient.firstName,
-                lastName: patient.lastName,
-                phoneNumber: patient.phoneNumber,
-                address: patient.address,
-                age: patient.age,
-                photo: patient.photo,
-                createdAt: patient.createdAt,
-                updatedAt: patient.updatedAt,
+            return res.json({
+                patient: {
+                    id: patient.id,
+                    login: patient.login,
+                    firstName: patient.firstName,
+                    lastName: patient.lastName,
+                    phoneNumber: patient.phoneNumber,
+                    address: patient.address,
+                    age: patient.age,
+                    photo: patient.photo,
+                    createdAt: patient.createdAt,
+                    updatedAt: patient.updatedAt,
+                },
             });
         } catch (error) {
             console.error('Ошибка при обновлении пациента:', error);
-            res.status(500).json({ message: 'Ошибка сервера' });
+            return res.status(500).json({ message: 'Ошибка сервера' });
         }
     }
 
@@ -257,10 +283,10 @@ class PatientController {
 
             await patient.destroy();
 
-            res.status(200).json({ message: 'Пациент успешно удалён' });
+            return res.status(200).json({ message: 'Пациент успешно удалён' });
         } catch (error) {
             console.error('Ошибка при удалении пациента:', error);
-            res.status(500).json({ message: 'Ошибка сервера' });
+            return res.status(500).json({ message: 'Ошибка сервера' });
         }
     }
 }

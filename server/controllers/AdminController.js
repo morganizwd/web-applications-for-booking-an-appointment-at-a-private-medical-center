@@ -70,7 +70,15 @@ class AdminController {
                 { expiresIn: '24h' }
             );
 
-            res.json({ token, adminId: admin.id });
+            res.json({
+                token,
+                adminId: admin.id,
+                admin: {
+                  id: admin.id,
+                  login: admin.login,
+                  role: 'admin', // <-- добавляем роль
+                }
+            });
         } catch (error) {
             console.error('Ошибка при входе администратора:', error);
             res.status(500).json({ message: 'Ошибка сервера' });
@@ -84,20 +92,22 @@ class AdminController {
             if (!token) {
                 return res.status(401).json({ message: 'Не авторизован' });
             }
-
-            // Верификация токена
-            const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your_jwt_secret_key');
+    
+            // Проверка
+            const decoded = jwt.verify(token, process.env.JWT_SECRET || '...');
             const admin = await Admin.findByPk(decoded.adminId);
-
             if (!admin) {
                 return res.status(404).json({ message: 'Администратор не найден' });
             }
-
+    
+            // Возвращаем нужные поля
             res.json({
-                id: admin.id,
-                login: admin.login,
-                createdAt: admin.createdAt,
-                updatedAt: admin.updatedAt,
+                // лучше вернуть точно так же, как при логине
+                admin: {
+                  id: admin.id,
+                  login: admin.login,
+                  role: 'admin', // <-- чтобы Redux знал, что это админ
+                },
             });
         } catch (error) {
             console.error('Ошибка при аутентификации администратора:', error);
