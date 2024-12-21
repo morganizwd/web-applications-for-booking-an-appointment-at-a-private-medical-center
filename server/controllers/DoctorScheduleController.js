@@ -1,11 +1,9 @@
-const { DoctorSchedule, Doctor } = require('../models/models'); // Убедитесь, что путь правильный
+const { DoctorSchedule, Doctor } = require('../models/models'); 
 const { validationResult } = require('express-validator');
 
 class DoctorScheduleController {
-    // Создание нового расписания врача
     async create(req, res) {
         try {
-            // Валидация входных данных
             const errors = validationResult(req);
             if (!errors.isEmpty()) {
                 return res.status(400).json({ errors: errors.array() });
@@ -13,18 +11,15 @@ class DoctorScheduleController {
 
             const { doctorId, dayOfWeek, startTime, endTime } = req.body;
 
-            // Проверка наличия врача
             const doctor = await Doctor.findByPk(doctorId);
             if (!doctor) {
                 return res.status(404).json({ message: 'Врач не найден' });
             }
 
-            // Дополнительная проверка: startTime должен быть меньше endTime
             if (startTime >= endTime) {
                 return res.status(400).json({ message: 'Время начала должно быть раньше времени окончания' });
             }
 
-            // Создание нового расписания
             const schedule = await DoctorSchedule.create({
                 doctorId,
                 dayOfWeek,
@@ -47,7 +42,6 @@ class DoctorScheduleController {
         }
     }
 
-    // Получение расписания по ID
     async findOne(req, res) {
         try {
             const schedule = await DoctorSchedule.findByPk(req.params.id, {
@@ -66,7 +60,6 @@ class DoctorScheduleController {
         }
     }
 
-    // Получение списка всех расписаний
     async findAll(req, res) {
         try {
             const schedules = await DoctorSchedule.findAll({
@@ -82,25 +75,21 @@ class DoctorScheduleController {
         }
     }
 
-    // Обновление данных расписания
     async update(req, res) {
         try {
             const { doctorId, dayOfWeek, startTime, endTime } = req.body;
             const scheduleId = req.params.id;
 
-            // Валидация входных данных
             const errors = validationResult(req);
             if (!errors.isEmpty()) {
                 return res.status(400).json({ errors: errors.array() });
             }
 
-            // Поиск расписания по ID
             const schedule = await DoctorSchedule.findByPk(scheduleId);
             if (!schedule) {
                 return res.status(404).json({ message: 'Расписание не найдено' });
             }
 
-            // Если обновляется doctorId, проверяем существование врача
             if (doctorId && doctorId !== schedule.doctorId) {
                 const doctor = await Doctor.findByPk(doctorId);
                 if (!doctor) {
@@ -108,12 +97,10 @@ class DoctorScheduleController {
                 }
             }
 
-            // Дополнительная проверка: startTime должен быть меньше endTime
             if (startTime && endTime && startTime >= endTime) {
                 return res.status(400).json({ message: 'Время начала должно быть раньше времени окончания' });
             }
 
-            // Обновление данных расписания
             await schedule.update({
                 doctorId: doctorId || schedule.doctorId,
                 dayOfWeek: dayOfWeek !== undefined ? dayOfWeek : schedule.dayOfWeek,
@@ -136,18 +123,15 @@ class DoctorScheduleController {
         }
     }
 
-    // Удаление расписания
     async delete(req, res) {
         try {
             const scheduleId = req.params.id;
 
-            // Поиск расписания по ID
             const schedule = await DoctorSchedule.findByPk(scheduleId);
             if (!schedule) {
                 return res.status(404).json({ message: 'Расписание не найдено' });
             }
 
-            // Удаление расписания
             await schedule.destroy();
 
             res.status(200).json({ message: 'Расписание успешно удалено' });

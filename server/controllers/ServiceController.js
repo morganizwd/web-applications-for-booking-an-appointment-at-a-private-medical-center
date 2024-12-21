@@ -1,28 +1,24 @@
-const { Service, Department } = require('../models/models'); // Убедитесь, что путь правильный
+const { Service, Department } = require('../models/models');
 const { validationResult } = require('express-validator');
 const fs = require('fs');
 const path = require('path');
 
 class ServiceController {
-    // Создание новой услуги
     async create(req, res) {
         try {
-            // Валидация входных данных
             const errors = validationResult(req);
             if (!errors.isEmpty()) {
                 return res.status(400).json({ errors: errors.array() });
             }
 
-            const { name, price, departmentId } = req.body; // Добавляем departmentId
-            console.log('Создание услуги с departmentId:', departmentId); // Для отладки
+            const { name, price, departmentId } = req.body;
+            console.log('Создание услуги с departmentId:', departmentId); 
 
-            // Проверка на существование услуги с таким же названием
             const existingService = await Service.findOne({ where: { name } });
             if (existingService) {
                 return res.status(400).json({ message: 'Услуга с таким названием уже существует' });
             }
 
-            // Проверка существования отделения
             const parsedDepartmentId = parseInt(departmentId, 10);
             if (isNaN(parsedDepartmentId)) {
                 return res.status(400).json({ message: 'Неверный ID отделения' });
@@ -33,7 +29,6 @@ class ServiceController {
                 return res.status(400).json({ message: 'Отделение не найдено' });
             }
 
-            // Обработка загрузки фото
             let photoPath = null;
             if (req.file) {
                 const uploadDir = path.join(__dirname, '../uploads/services');
@@ -45,11 +40,10 @@ class ServiceController {
                 fs.writeFileSync(path.join(uploadDir, filename), req.file.buffer);
             }
 
-            // Создание новой услуги
             const service = await Service.create({
                 name,
                 price,
-                departmentId: parsedDepartmentId, // Устанавливаем departmentId
+                departmentId: parsedDepartmentId, 
                 photo: photoPath,
             });
 
@@ -68,7 +62,6 @@ class ServiceController {
         }
     }
 
-    // Получение услуги по ID
     async findOne(req, res) {
         try {
             const service = await Service.findByPk(req.params.id, {
@@ -78,7 +71,7 @@ class ServiceController {
                         attributes: ['id', 'name'],
                     },
                 ],
-                attributes: { exclude: ['createdAt', 'updatedAt'] }, // Исключаем ненужные поля при необходимости
+                attributes: { exclude: ['createdAt', 'updatedAt'] }, 
             });
             if (!service) {
                 return res.status(404).json({ message: 'Услуга не найдена' });
@@ -90,7 +83,6 @@ class ServiceController {
         }
     }
 
-    // Получение списка всех услуг
     async findAll(req, res) {
         try {
             const services = await Service.findAll({
@@ -100,7 +92,7 @@ class ServiceController {
                         attributes: ['id', 'name'],
                     },
                 ],
-                attributes: { exclude: ['createdAt', 'updatedAt'] }, // Исключаем ненужные поля при необходимости
+                attributes: { exclude: ['createdAt', 'updatedAt'] }, 
             });
             res.json(services);
         } catch (error) {
@@ -109,33 +101,28 @@ class ServiceController {
         }
     }
 
-    // Обновление данных услуги
     async update(req, res) {
         try {
             const { name, price, departmentId } = req.body;
             const serviceId = req.params.id;
     
-            // Валидация входных данных
             const errors = validationResult(req);
             if (!errors.isEmpty()) {
                 return res.status(400).json({ errors: errors.array() });
             }
     
-            // Поиск услуги по ID
             const service = await Service.findByPk(serviceId);
             if (!service) {
                 return res.status(404).json({ message: 'Услуга не найдена' });
             }
     
-            // Проверка на существование услуги с таким же названием (если имя меняется)
             if (name && name !== service.name) {
                 const existingService = await Service.findOne({ where: { name } });
                 if (existingService) {
                     return res.status(400).json({ message: 'Услуга с таким названием уже существует' });
                 }
             }
-    
-            // Проверка существования отделения, если departmentId передан
+
             if (departmentId) {
                 const parsedDepartmentId = parseInt(departmentId, 10);
                 if (isNaN(parsedDepartmentId)) {
@@ -157,7 +144,6 @@ class ServiceController {
                 updatedData.departmentId = parseInt(departmentId, 10);
             }
     
-            // Обработка загрузки нового фото
             if (req.file) {
                 const uploadDir = path.join(__dirname, '../uploads/services');
                 if (!fs.existsSync(uploadDir)) {
@@ -168,7 +154,6 @@ class ServiceController {
                 fs.writeFileSync(path.join(uploadDir, filename), req.file.buffer);
                 updatedData.photo = photoPath;
     
-                // Опционально: удаление старого фото
                 if (service.photo) {
                     const oldPhotoPath = path.join(__dirname, '..', service.photo);
                     if (fs.existsSync(oldPhotoPath)) {
@@ -177,7 +162,6 @@ class ServiceController {
                 }
             }
     
-            // Обновление данных услуги
             await service.update(updatedData);
     
             res.json({
@@ -195,18 +179,15 @@ class ServiceController {
         }
     }
 
-    // Удаление услуги
     async delete(req, res) {
         try {
             const serviceId = req.params.id;
 
-            // Поиск услуги по ID
             const service = await Service.findByPk(serviceId);
             if (!service) {
                 return res.status(404).json({ message: 'Услуга не найдена' });
             }
 
-            // Опционально: удаление фото услуги
             if (service.photo) {
                 const photoPath = path.join(__dirname, '..', service.photo);
                 if (fs.existsSync(photoPath)) {
@@ -214,7 +195,6 @@ class ServiceController {
                 }
             }
 
-            // Удаление услуги
             await service.destroy();
 
             res.status(200).json({ message: 'Услуга успешно удалена' });

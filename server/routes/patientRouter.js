@@ -6,18 +6,13 @@ const multer = require('multer');
 
 const router = express.Router();
 
-// Configure multer for file uploads
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
 
-// Routes for patient management
-
-// Register a new patient
 router.post(
     '/registration',
-    upload.single('photo'), // Handle photo upload
+    upload.single('photo'),
     [
-        // Validation for patient registration
         body('login').notEmpty().withMessage('Логин обязателен'),
         body('password').notEmpty().withMessage('Пароль обязателен'),
         body('firstName').notEmpty().withMessage('Имя обязательно'),
@@ -27,7 +22,6 @@ router.post(
     PatientController.registration
 );
 
-// Login patient
 router.post(
     '/login',
     [
@@ -37,22 +31,17 @@ router.post(
     PatientController.login
 );
 
-// Authenticate patient
 router.get('/auth', authenticateToken, PatientController.auth);
 
-// Get a specific patient by ID
 router.get('/:id', authenticateToken, PatientController.findOne);
 
-// Get all patients
 router.get('/', authenticateToken, PatientController.findAll);
 
-// Update patient data
 router.put(
     '/:id',
     authenticateToken,
-    upload.single('photo'), // Handle photo upload
+    upload.single('photo'), 
     [
-        // Validation for updating patient
         body('login').optional().notEmpty().withMessage('Логин не может быть пустым'),
         body('password').optional().notEmpty().withMessage('Пароль не может быть пустым'),
         body('firstName').optional().notEmpty().withMessage('Имя не может быть пустым'),
@@ -62,7 +51,6 @@ router.put(
     PatientController.update
 );
 
-// Delete a patient
 router.delete('/:id', authenticateToken, PatientController.delete);
 
 module.exports = router;

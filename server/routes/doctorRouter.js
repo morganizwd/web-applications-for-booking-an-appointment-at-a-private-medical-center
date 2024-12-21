@@ -8,18 +8,13 @@ const path = require('path');
 
 const router = express.Router();
 
-// Configure multer for file uploads
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
 
-// Routes for doctor management
-
-// Registration
 router.post(
     '/registration',
-    upload.single('photo'), // Handle photo upload
+    upload.single('photo'), 
     [
-        // Validation for doctor registration
         body('login').notEmpty().withMessage('Логин обязателен'),
         body('password').notEmpty().withMessage('Пароль обязателен'),
         body('firstName').notEmpty().withMessage('Имя обязательно'),
@@ -29,7 +24,6 @@ router.post(
     DoctorController.registration
 );
 
-// Login
 router.post(
     '/login',
     [
@@ -39,22 +33,17 @@ router.post(
     DoctorController.login
 );
 
-// Authenticate
 router.get('/auth', authenticateToken, DoctorController.auth);
 
-// Get a specific doctor by ID
 router.get('/:id', authenticateToken, DoctorController.findOne);
 
-// Get all doctors
 router.get('/', authenticateToken, DoctorController.findAll);
 
-// Update doctor data
 router.put(
     '/:id',
     authenticateToken,
-    upload.single('photo'), // Handle photo upload
+    upload.single('photo'),
     [
-        // Validation for updating doctor
         body('login').optional().notEmpty().withMessage('Логин не может быть пустым'),
         body('password').optional().notEmpty().withMessage('Пароль не может быть пустым'),
         body('firstName').optional().notEmpty().withMessage('Имя не может быть пустым'),
@@ -64,7 +53,6 @@ router.put(
     DoctorController.update
 );
 
-// Delete a doctor
 router.delete('/:id', authenticateToken, DoctorController.delete);
 
 module.exports = router;

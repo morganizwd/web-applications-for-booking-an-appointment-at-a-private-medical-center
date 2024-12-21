@@ -1,9 +1,8 @@
 // models/index.js
 
 const { Sequelize, DataTypes, Op } = require('sequelize');
-const sequelize = require('../db'); // Убедитесь, что путь правильный
+const sequelize = require('../db'); 
 
-// Admin Model
 const Admin = sequelize.define('Admin', {
     id: {
         type: DataTypes.INTEGER,
@@ -26,7 +25,6 @@ const Admin = sequelize.define('Admin', {
     timestamps: true,
 });
 
-// Patient Model
 const Patient = sequelize.define('Patient', {
     id: {
         type: DataTypes.INTEGER,
@@ -85,7 +83,6 @@ const Patient = sequelize.define('Patient', {
     timestamps: true,
 });
 
-// Doctor Model
 const Doctor = sequelize.define('Doctor', {
     id: {
         type: DataTypes.INTEGER,
@@ -133,7 +130,6 @@ const Doctor = sequelize.define('Doctor', {
     timestamps: true,
 });
 
-// Department Model
 const Department = sequelize.define('Department', {
     id: {
         type: DataTypes.INTEGER,
@@ -152,14 +148,13 @@ const Department = sequelize.define('Department', {
     timestamps: true,
 });
 
-// DoctorSchedule Model
 const DoctorSchedule = sequelize.define('DoctorSchedule', {
     id: {
         type: DataTypes.INTEGER,
         primaryKey: true,
         autoIncrement: true,
     },
-    dayOfWeek: { // День недели (0 - воскресенье, 5 - пятница)
+    dayOfWeek: { 
         type: DataTypes.INTEGER,
         allowNull: false,
         validate: {
@@ -179,7 +174,6 @@ const DoctorSchedule = sequelize.define('DoctorSchedule', {
     timestamps: true,
 });
 
-// Service Model
 const Service = sequelize.define('Service', {
     id: {
         type: DataTypes.INTEGER,
@@ -210,7 +204,6 @@ const Service = sequelize.define('Service', {
     timestamps: true,
 });
 
-// Diagnosis Model
 const Diagnosis = sequelize.define('Diagnosis', {
     id: {
         type: DataTypes.INTEGER,
@@ -235,7 +228,6 @@ const Diagnosis = sequelize.define('Diagnosis', {
     timestamps: true,
 });
 
-// Appointment Model
 const Appointment = sequelize.define('Appointment', {
     id: {
         type: DataTypes.INTEGER,
@@ -247,7 +239,7 @@ const Appointment = sequelize.define('Appointment', {
         allowNull: false,
         validate: {
             isDate: true,
-            isAfter: new Date().toISOString(), // Приемы должны быть в будущем
+            isAfter: new Date().toISOString(), 
         },
     },
     doctorId: {
@@ -284,12 +276,9 @@ const Appointment = sequelize.define('Appointment', {
     timestamps: true,
 });
 
-// Relationships
-
-// Doctor - Department
 Doctor.belongsTo(Department, {
     foreignKey: {
-        name: 'departmentId', // <--- ЯВНО указываем имя внешнего ключа
+        name: 'departmentId', 
         allowNull: false,
     },
     onDelete: 'CASCADE',
@@ -297,14 +286,13 @@ Doctor.belongsTo(Department, {
 });
 Department.hasMany(Doctor, {
     foreignKey: {
-        name: 'departmentId', // <--- То же самое
+        name: 'departmentId', 
         allowNull: false,
     },
     onDelete: 'CASCADE',
     onUpdate: 'CASCADE',
 });
 
-// Doctor - DoctorSchedule
 Doctor.hasMany(DoctorSchedule, {
     foreignKey: { allowNull: false },
     onDelete: 'CASCADE',
@@ -316,7 +304,6 @@ DoctorSchedule.belongsTo(Doctor, {
     onUpdate: 'CASCADE',
 });
 
-// Doctor - Appointment
 Doctor.hasMany(Appointment, {
     foreignKey: { allowNull: false },
     onDelete: 'CASCADE',
@@ -328,7 +315,6 @@ Appointment.belongsTo(Doctor, {
     onUpdate: 'CASCADE',
 });
 
-// Patient - Appointment
 Patient.hasMany(Appointment, {
     foreignKey: { allowNull: false },
     onDelete: 'CASCADE',
@@ -342,7 +328,7 @@ Appointment.belongsTo(Patient, {
 
 Service.belongsTo(Department, {
     foreignKey: {
-        name: 'departmentId', // Явно указываем имя внешнего ключа
+        name: 'departmentId',
         allowNull: false,
     },
     onDelete: 'CASCADE',
@@ -350,14 +336,13 @@ Service.belongsTo(Department, {
 });
 Department.hasMany(Service, {
     foreignKey: {
-        name: 'departmentId', // Явно указываем имя внешнего ключа
+        name: 'departmentId',
         allowNull: false,
     },
     onDelete: 'CASCADE',
     onUpdate: 'CASCADE',
 });
 
-// Service - Appointment
 Service.hasMany(Appointment, {
     foreignKey: { allowNull: false },
     onDelete: 'CASCADE',
@@ -369,7 +354,6 @@ Appointment.belongsTo(Service, {
     onUpdate: 'CASCADE',
 });
 
-// Diagnosis - Patient
 Diagnosis.belongsTo(Patient, {
     foreignKey: { allowNull: false },
     onDelete: 'CASCADE',
@@ -381,7 +365,6 @@ Patient.hasMany(Diagnosis, {
     onUpdate: 'CASCADE',
 });
 
-// Diagnosis - Doctor
 Diagnosis.belongsTo(Doctor, {
     foreignKey: { allowNull: false },
     onDelete: 'CASCADE',

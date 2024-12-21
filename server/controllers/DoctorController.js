@@ -1,39 +1,33 @@
-const { Doctor } = require('../models/models'); // Убедитесь, что путь правильный
+const { Doctor } = require('../models/models'); 
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const fs = require('fs');
 const path = require('path');
 
 class DoctorController {
-    // Регистрация нового врача
     async registration(req, res) {
         try {
-            console.log('req.body:', req.body); // Добавьте для отладки
-            console.log('req.file:', req.file); // Добавьте для отладки
+            console.log('req.body:', req.body);
+            console.log('req.file:', req.file);
 
             const { login, password, firstName, lastName, specialization, departmentId } = req.body;
 
-            // Проверка наличия обязательных полей
             if (!login || !password || !firstName || !lastName || !specialization) {
                 return res.status(400).json({ message: 'Необходимы логин, пароль, имя, фамилия и специализация' });
             }
 
-            // Проверка, что departmentId не пуст
             if (!departmentId) {
                 return res.status(400).json({ message: 'Необходимо указать departmentId' });
             }
-            
-            // Проверка на существование врача с таким же логином
+
             const existingDoctor = await Doctor.findOne({ where: { login } });
             if (existingDoctor) {
                 return res.status(400).json({ message: 'Врач с таким логином уже существует' });
             }
 
-            // Хэширование пароля
             const salt = await bcrypt.genSalt(10);
             const hashedPassword = await bcrypt.hash(password, salt);
 
-            // Обработка загрузки фото
             let photoPath = null;
             if (req.file) {
                 const uploadDir = path.join(__dirname, '../uploads/doctors');
@@ -45,7 +39,6 @@ class DoctorController {
                 fs.writeFileSync(path.join(uploadDir, filename), req.file.buffer);
             }
 
-            // Создание нового врача
             const doctor = await Doctor.create({
                 login,
                 password: hashedPassword,
@@ -72,29 +65,24 @@ class DoctorController {
         }
     }
 
-    // Вход врача и выдача JWT токена
     async login(req, res) {
         try {
             const { login, password } = req.body;
 
-            // Проверка наличия обязательных полей
             if (!login || !password) {
                 return res.status(400).json({ message: 'Необходимы логин и пароль' });
             }
 
-            // Поиск врача по логину
             const doctor = await Doctor.findOne({ where: { login } });
             if (!doctor) {
                 return res.status(404).json({ message: 'Врач не найден' });
             }
 
-            // Проверка пароля
             const isMatch = await bcrypt.compare(password, doctor.password);
             if (!isMatch) {
                 return res.status(400).json({ message: 'Неверный пароль' });
             }
 
-            // Генерация JWT токена
             const token = jwt.sign(
                 { doctorId: doctor.id },
                 process.env.JWT_SECRET || 'your_jwt_secret_key',
@@ -108,7 +96,6 @@ class DoctorController {
         }
     }
 
-    // Аутентификация врача по JWT токену
     async auth(req, res) {
         try {
             const token = req.headers.authorization && req.headers.authorization.split(' ')[1];
@@ -116,7 +103,6 @@ class DoctorController {
                 return res.status(401).json({ message: 'Не авторизован' });
             }
 
-            // Верификация токена
             const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your_jwt_secret_key');
             const doctor = await Doctor.findByPk(decoded.doctorId);
 
@@ -140,11 +126,10 @@ class DoctorController {
         }
     }
 
-    // Получение врача по ID
     async findOne(req, res) {
         try {
             const doctor = await Doctor.findByPk(req.params.id, {
-                attributes: { exclude: ['password'] }, // Исключаем пароль из ответа
+                attributes: { exclude: ['password'] }, 
             });
             if (!doctor) {
                 return res.status(404).json({ message: 'Врач не найден' });
@@ -156,11 +141,10 @@ class DoctorController {
         }
     }
 
-    // Получение списка всех врачей
     async findAll(req, res) {
         try {
             const doctors = await Doctor.findAll({
-                attributes: { exclude: ['password'] }, // Исключаем пароли из ответа
+                attributes: { exclude: ['password'] }, 
             });
             res.json(doctors);
         } catch (error) {
@@ -169,13 +153,11 @@ class DoctorController {
         }
     }
 
-    // Обновление данных врача
     async update(req, res) {
         try {
             const { login, password, firstName, lastName, specialization } = req.body;
             const doctorId = req.params.id;
 
-            // Проверка, что запрашивающий врач совпадает с обновляемым
             if (req.user.doctorId !== parseInt(doctorId, 10)) {
                 return res.status(403).json({ message: 'Нет прав для обновления этого профиля' });
             }
@@ -187,14 +169,12 @@ class DoctorController {
 
             let updatedData = { login, firstName, lastName, specialization };
 
-            // Если передан новый пароль, хэшируем его
             if (password) {
                 const salt = await bcrypt.genSalt(10);
                 const hashedPassword = await bcrypt.hash(password, salt);
                 updatedData.password = hashedPassword;
             }
 
-            // Обработка загрузки нового фото
             if (req.file) {
                 const uploadDir = path.join(__dirname, '../uploads/doctors');
                 if (!fs.existsSync(uploadDir)) {
@@ -205,7 +185,6 @@ class DoctorController {
                 fs.writeFileSync(path.join(uploadDir, filename), req.file.buffer);
                 updatedData.photo = photoPath;
 
-                // Опционально: удаление старого фото
                 if (doctor.photo) {
                     const oldPhotoPath = path.join(__dirname, '..', doctor.photo);
                     if (fs.existsSync(oldPhotoPath)) {
@@ -214,7 +193,6 @@ class DoctorController {
                 }
             }
 
-            // Обновление данных врача
             await doctor.update(updatedData);
 
             res.json({
@@ -233,12 +211,10 @@ class DoctorController {
         }
     }
 
-    // Удаление врача
     async delete(req, res) {
         try {
             const doctorId = req.params.id;
 
-            // Проверка, что запрашивающий врач совпадает с удаляемым
             if (req.user.doctorId !== parseInt(doctorId, 10)) {
                 return res.status(403).json({ message: 'Нет прав для удаления этого профиля' });
             }
@@ -248,7 +224,6 @@ class DoctorController {
                 return res.status(404).json({ message: 'Врач не найден' });
             }
 
-            // Опционально: удаление фото врача
             if (doctor.photo) {
                 const photoPath = path.join(__dirname, '..', doctor.photo);
                 if (fs.existsSync(photoPath)) {

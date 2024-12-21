@@ -1,7 +1,6 @@
 const Router = require('express').Router;
 const router = new Router();
 
-// Admin router
 router.use('/admins', require('./adminRouter'));
 router.use('/appointments', require('./appointmentRouter'));
 router.use('/departments', require('./departmentRouter'));

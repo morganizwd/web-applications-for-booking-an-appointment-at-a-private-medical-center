@@ -1,6 +1,6 @@
 const { Sequelize } = require('sequelize');
 
-const DB_NAME = process.env.DB_NAME || 'bakery_marketplace';
+const DB_NAME = process.env.DB_NAME || 'medical_center';
 const DB_USER = process.env.DB_USER || 'postgres';
 const DB_PASSWORD = process.env.DB_PASSWORD || '';
 const DB_HOST = process.env.DB_HOST || 'localhost';

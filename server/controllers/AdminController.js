@@ -1,29 +1,24 @@
-const { Admin } = require('../models/models'); // Убедитесь, что путь правильный
+const { Admin } = require('../models/models'); 
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
 class AdminController {
-    // Регистрация нового администратора
     async registration(req, res) {
         try {
             const { login, password } = req.body;
 
-            // Проверка наличия обязательных полей
             if (!login || !password) {
                 return res.status(400).json({ message: 'Необходимы логин и пароль' });
             }
 
-            // Проверка на существование администратора с таким же логином
             const existingAdmin = await Admin.findOne({ where: { login } });
             if (existingAdmin) {
                 return res.status(400).json({ message: 'Администратор с таким логином уже существует' });
             }
 
-            // Хэширование пароля
             const salt = await bcrypt.genSalt(10);
             const hashedPassword = await bcrypt.hash(password, salt);
 
-            // Создание нового администратора
             const admin = await Admin.create({
                 login,
                 password: hashedPassword,
@@ -41,29 +36,24 @@ class AdminController {
         }
     }
 
-    // Вход администратора и выдача JWT токена
     async login(req, res) {
         try {
             const { login, password } = req.body;
 
-            // Проверка наличия обязательных полей
             if (!login || !password) {
                 return res.status(400).json({ message: 'Необходимы логин и пароль' });
             }
 
-            // Поиск администратора по логину
             const admin = await Admin.findOne({ where: { login } });
             if (!admin) {
                 return res.status(404).json({ message: 'Администратор не найден' });
             }
 
-            // Проверка пароля
             const isMatch = await bcrypt.compare(password, admin.password);
             if (!isMatch) {
                 return res.status(400).json({ message: 'Неверный пароль' });
             }
 
-            // Генерация JWT токена
             const token = jwt.sign(
                 { adminId: admin.id },
                 process.env.JWT_SECRET || 'your_jwt_secret_key',
@@ -76,7 +66,7 @@ class AdminController {
                 admin: {
                   id: admin.id,
                   login: admin.login,
-                  role: 'admin', // <-- добавляем роль
+                  role: 'admin', 
                 }
             });
         } catch (error) {
@@ -85,7 +75,6 @@ class AdminController {
         }
     }
 
-    // Аутентификация администратора по JWT токену
     async auth(req, res) {
         try {
             const token = req.headers.authorization && req.headers.authorization.split(' ')[1];
@@ -93,20 +82,17 @@ class AdminController {
                 return res.status(401).json({ message: 'Не авторизован' });
             }
     
-            // Проверка
             const decoded = jwt.verify(token, process.env.JWT_SECRET || '...');
             const admin = await Admin.findByPk(decoded.adminId);
             if (!admin) {
                 return res.status(404).json({ message: 'Администратор не найден' });
             }
     
-            // Возвращаем нужные поля
             res.json({
-                // лучше вернуть точно так же, как при логине
                 admin: {
                   id: admin.id,
                   login: admin.login,
-                  role: 'admin', // <-- чтобы Redux знал, что это админ
+                  role: 'admin', 
                 },
             });
         } catch (error) {
@@ -115,7 +101,6 @@ class AdminController {
         }
     }
 
-    // Получение администратора по ID
     async findOne(req, res) {
         try {
             const admin = await Admin.findByPk(req.params.id);
@@ -134,7 +119,6 @@ class AdminController {
         }
     }
 
-    // Получение списка всех администраторов
     async findAll(req, res) {
         try {
             const admins = await Admin.findAll({
@@ -147,13 +131,11 @@ class AdminController {
         }
     }
 
-    // Обновление данных администратора
     async update(req, res) {
         try {
             const { login, password } = req.body;
             const adminId = req.params.id;
 
-            // Проверка, что запрашивающий администратор совпадает с обновляемым
             if (req.user.adminId !== parseInt(adminId, 10)) {
                 return res.status(403).json({ message: 'Нет прав для обновления этого профиля' });
             }
@@ -165,14 +147,12 @@ class AdminController {
 
             let updatedData = { login };
 
-            // Если передан новый пароль, хэшируем его
             if (password) {
                 const salt = await bcrypt.genSalt(10);
                 const hashedPassword = await bcrypt.hash(password, salt);
                 updatedData.password = hashedPassword;
             }
 
-            // Обновление данных администратора
             await admin.update(updatedData);
 
             res.json({
@@ -187,12 +167,10 @@ class AdminController {
         }
     }
 
-    // Удаление администратора
     async delete(req, res) {
         try {
             const adminId = req.params.id;
 
-            // Проверка, что запрашивающий администратор совпадает с удаляемым
             if (req.user.adminId !== parseInt(adminId, 10)) {
                 return res.status(403).json({ message: 'Нет прав для удаления этого профиля' });
             }

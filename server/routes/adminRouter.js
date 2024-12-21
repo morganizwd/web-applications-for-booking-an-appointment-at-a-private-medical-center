@@ -4,13 +4,12 @@ const authenticateToken = require('../middleware/authenticateToken');
 
 const router = express.Router();
 
-// Admin routes
-router.post('/registration', AdminController.registration); // Public
-router.post('/login', AdminController.login); // Public
-router.get('/auth', authenticateToken, AdminController.auth); // Requires authentication
-router.get('/', authenticateToken, AdminController.findAll); // Requires authentication
-router.get('/:id', authenticateToken, AdminController.findOne); // Requires authentication
-router.put('/:id', authenticateToken, AdminController.update); // Requires authentication
-router.delete('/:id', authenticateToken, AdminController.delete); // Requires authentication
+router.post('/registration', AdminController.registration); 
+router.post('/login', AdminController.login); 
+router.get('/auth', authenticateToken, AdminController.auth); 
+router.get('/', authenticateToken, AdminController.findAll); 
+router.get('/:id', authenticateToken, AdminController.findOne); 
+router.put('/:id', authenticateToken, AdminController.update); 
+router.delete('/:id', authenticateToken, AdminController.delete); 
 
 module.exports = router;

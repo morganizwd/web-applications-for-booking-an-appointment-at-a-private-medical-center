@@ -5,14 +5,10 @@ const authenticateToken = require('../middleware/authenticateToken');
 
 const router = express.Router();
 
-// Routes for doctor schedule management
-
-// Create a new schedule
 router.post(
     '/create',
-    authenticateToken, // Ensure the user is authenticated
+    authenticateToken,
     [
-        // Validation for schedule creation
         body('doctorId').notEmpty().withMessage('ID врача обязательно').isInt().withMessage('ID врача должен быть числом'),
         body('dayOfWeek')
             .notEmpty()
@@ -25,18 +21,14 @@ router.post(
     DoctorScheduleController.create
 );
 
-// Get a specific schedule by ID
 router.get('/:id', authenticateToken, DoctorScheduleController.findOne);
 
-// Get all schedules
 router.get('/', authenticateToken, DoctorScheduleController.findAll);
 
-// Update a schedule
 router.put(
     '/:id',
     authenticateToken,
     [
-        // Validation for schedule update
         body('doctorId').optional().isInt().withMessage('ID врача должен быть числом'),
         body('dayOfWeek')
             .optional()
@@ -48,7 +40,6 @@ router.put(
     DoctorScheduleController.update
 );
 
-// Delete a schedule
 router.delete('/:id', authenticateToken, DoctorScheduleController.delete);
 
 module.exports = router;
