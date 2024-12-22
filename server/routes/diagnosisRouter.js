@@ -6,11 +6,13 @@ const authenticateToken = require('../middleware/authenticateToken');
 const router = express.Router();
 
 router.post(
-    '/create',
+    '/',
     authenticateToken,
     [
         body('name').notEmpty().withMessage('Название обязательно'),
         body('conclusion').notEmpty().withMessage('Заключение обязательно'),
+        body('patientId').notEmpty().withMessage('ID пациента обязателен')
+            .isInt().withMessage('ID пациента должен быть числом'),
     ],
     DiagnosisController.create
 );

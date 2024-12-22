@@ -1,7 +1,7 @@
 // src/components/ServiceManagement.jsx
 
 import React, { useEffect, useState } from 'react';
-import axios from '../redux/axios'; // Убедитесь, что путь правильный
+import axios from '../../redux/axios'; // Убедитесь, что путь правильный
 
 // Импортируем необходимые компоненты из MUI
 import {

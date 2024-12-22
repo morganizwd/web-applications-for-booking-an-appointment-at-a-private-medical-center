@@ -15,7 +15,7 @@ export const registration = createAsyncThunk(
                     'Content-Type': 'multipart/form-data',
                 },
             });
-            return response.data;
+            return response.data; // Ожидаем, что бэкенд вернёт { patient: {...}, token: '...' }
         } catch (err) {
             if (err.response && err.response.data && err.response.data.message) {
                 return rejectWithValue(err.response.data.message);
@@ -32,7 +32,7 @@ export const login = createAsyncThunk(
     async (credentials, { rejectWithValue }) => {
         try {
             const response = await axios.post('/patients/login', credentials);
-            return response.data;
+            return response.data; // Ожидаем, что бэкенд вернёт { patient: {...}, token: '...' }
         } catch (err) {
             if (err.response && err.response.data && err.response.data.message) {
                 return rejectWithValue(err.response.data.message);
@@ -49,7 +49,7 @@ export const auth = createAsyncThunk(
     async (_, { rejectWithValue }) => {
         try {
             const response = await axios.get('/patients/auth');
-            return response.data;
+            return response.data; // Ожидаем, что бэкенд вернёт { patient: {...} }
         } catch (err) {
             if (err.response && err.response.data && err.response.data.message) {
                 return rejectWithValue(err.response.data.message);
@@ -66,7 +66,8 @@ export const fetchAllPatients = createAsyncThunk(
     async (_, { rejectWithValue }) => {
         try {
             const response = await axios.get('/patients');
-            return response.data;
+            return response.data; 
+            // Предположим, что бэкенд возвращает { patients: [...] }
         } catch (err) {
             if (err.response && err.response.data && err.response.data.message) {
                 return rejectWithValue(err.response.data.message);
@@ -83,7 +84,8 @@ export const fetchPatientById = createAsyncThunk(
     async (patientId, { rejectWithValue }) => {
         try {
             const response = await axios.get(`/patients/${patientId}`);
-            return response.data;
+            return response.data; 
+            // Предположим, что бэкенд возвращает { patient: {...} }
         } catch (err) {
             if (err.response && err.response.data && err.response.data.message) {
                 return rejectWithValue(err.response.data.message);
@@ -110,7 +112,7 @@ export const updatePatient = createAsyncThunk(
                     'Content-Type': 'multipart/form-data',
                 },
             });
-            return response.data;
+            return response.data; // Ожидаем { patient: {...} }
         } catch (err) {
             if (err.response && err.response.data && err.response.data.message) {
                 return rejectWithValue(err.response.data.message);
@@ -127,7 +129,7 @@ export const deletePatient = createAsyncThunk(
     async (patientId, { rejectWithValue }) => {
         try {
             await axios.delete(`/patients/${patientId}`);
-            return patientId;
+            return patientId; // Возвращаем сам ID, чтобы удалить из стейта
         } catch (err) {
             if (err.response && err.response.data && err.response.data.message) {
                 return rejectWithValue(err.response.data.message);
@@ -158,6 +160,7 @@ const patientSlice = createSlice({
             state.error = null;
             localStorage.removeItem('token');
             localStorage.removeItem('role');
+            localStorage.removeItem('patientId'); // <-- Удаляем patientId тоже
             delete axios.defaults.headers.common['Authorization'];
         },
     },
@@ -170,27 +173,33 @@ const patientSlice = createSlice({
             })
             .addCase(registration.fulfilled, (state, action) => {
                 state.status = 'succeeded';
-                state.patient = action.payload.patient;
-                localStorage.setItem('token', action.payload.token);
-                localStorage.setItem('role', 'patient'); // Добавьте эту строку
-                axios.defaults.headers.common['Authorization'] = `Bearer ${action.payload.token}`;
+                // action.payload = { patient: {...}, token: '...' }
+                const { patient, token } = action.payload;
+                state.patient = patient;
+                localStorage.setItem('token', token);
+                localStorage.setItem('role', 'patient');
+                localStorage.setItem('patientId', patient.id); // <<--- ВАЖНО!
+                axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
             })
             .addCase(registration.rejected, (state, action) => {
                 state.status = 'failed';
                 state.error = action.payload || action.error.message;
             })
 
-            // Вход пациента
+            // Вход (логин) пациента
             .addCase(login.pending, (state) => {
                 state.status = 'loading';
                 state.error = null;
             })
             .addCase(login.fulfilled, (state, action) => {
                 state.status = 'succeeded';
-                state.patient = action.payload.patient;
-                localStorage.setItem('token', action.payload.token);
-                localStorage.setItem('role', 'patient'); // Добавьте эту строку
-                axios.defaults.headers.common['Authorization'] = `Bearer ${action.payload.token}`;
+                // action.payload = { patient: {...}, token: '...' }
+                const { patient, token } = action.payload;
+                state.patient = patient;
+                localStorage.setItem('token', token);
+                localStorage.setItem('role', 'patient');
+                localStorage.setItem('patientId', patient.id); // <<--- ВАЖНО!
+                axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
             })
             .addCase(login.rejected, (state, action) => {
                 state.status = 'failed';
@@ -203,6 +212,7 @@ const patientSlice = createSlice({
                 state.error = null;
             })
             .addCase(auth.fulfilled, (state, action) => {
+                // action.payload = { patient: {...} }
                 state.status = 'succeeded';
                 state.patient = action.payload.patient;
             })
@@ -212,6 +222,7 @@ const patientSlice = createSlice({
                 state.patient = null;
                 localStorage.removeItem('token');
                 localStorage.removeItem('role');
+                localStorage.removeItem('patientId'); // Удаляем
                 delete axios.defaults.headers.common['Authorization'];
             })
 
@@ -221,6 +232,7 @@ const patientSlice = createSlice({
                 state.error = null;
             })
             .addCase(fetchAllPatients.fulfilled, (state, action) => {
+                // Предположим, что бэкенд вернет: { patients: [...] }
                 state.status = 'succeeded';
                 state.patients = action.payload.patients;
             })
@@ -255,9 +267,9 @@ const patientSlice = createSlice({
                 state.error = null;
             })
             .addCase(updatePatient.fulfilled, (state, action) => {
+                // action.payload = { patient: {...} }
                 state.status = 'succeeded';
                 state.patient = action.payload.patient;
-                // Обновляем пациента в списке, если он там есть
                 const index = state.patients.findIndex(p => p.id === action.payload.patient.id);
                 if (index !== -1) {
                     state.patients[index] = action.payload.patient;
@@ -275,13 +287,14 @@ const patientSlice = createSlice({
             })
             .addCase(deletePatient.fulfilled, (state, action) => {
                 state.status = 'succeeded';
-                // Если удаляем текущего пациента
+                // action.payload = patientId (число)
                 if (state.patient && state.patient.id === action.payload) {
                     state.patient = null;
                     localStorage.removeItem('token');
+                    localStorage.removeItem('role');
+                    localStorage.removeItem('patientId');
                     delete axios.defaults.headers.common['Authorization'];
                 }
-                // Удаляем пациента из списка
                 state.patients = state.patients.filter(p => p.id !== action.payload);
             })
             .addCase(deletePatient.rejected, (state, action) => {

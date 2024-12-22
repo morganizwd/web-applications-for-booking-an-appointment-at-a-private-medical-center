@@ -1,4 +1,4 @@
-const { Doctor } = require('../models/models'); 
+const { Doctor, Department  } = require('../models/models'); 
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const fs = require('fs');
@@ -130,6 +130,10 @@ class DoctorController {
         try {
             const doctor = await Doctor.findByPk(req.params.id, {
                 attributes: { exclude: ['password'] }, 
+                include: {
+                    model: Department,
+                    attributes: ['id', 'name'], // Указываем, какие поля хотим получить из Department
+                },
             });
             if (!doctor) {
                 return res.status(404).json({ message: 'Врач не найден' });
@@ -141,10 +145,15 @@ class DoctorController {
         }
     }
 
+    // Обновите метод findAll аналогичным образом, если он используется для получения списка врачей
     async findAll(req, res) {
         try {
             const doctors = await Doctor.findAll({
                 attributes: { exclude: ['password'] }, 
+                include: {
+                    model: Department,
+                    attributes: ['id', 'name'],
+                },
             });
             res.json(doctors);
         } catch (error) {
@@ -152,6 +161,7 @@ class DoctorController {
             res.status(500).json({ message: 'Ошибка сервера' });
         }
     }
+
 
     async update(req, res) {
         try {

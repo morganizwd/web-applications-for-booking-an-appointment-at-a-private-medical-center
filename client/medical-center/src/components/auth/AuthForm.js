@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import axios from '../redux/axios'; // Для запроса /departments
+import axios from '../../redux/axios'; // Для запроса /departments
 
 // Импортируем необходимые компоненты из MUI
 import {
@@ -23,21 +23,21 @@ import {
     login as adminLogin,
     selectAdminStatus,
     selectAdminError,
-} from '../redux/slices/adminSlice';
+} from '../../redux/slices/adminSlice';
 
 import {
     registration as doctorRegistration,
     login as doctorLogin,
     selectDoctorStatus,
     selectDoctorError,
-} from '../redux/slices/doctorSlice';
+} from '../../redux/slices/doctorSlice';
 
 import {
     registration as patientRegistration,
     login as patientLogin,
     selectPatientStatus,
     selectPatientError,
-} from '../redux/slices/patientSlice';
+} from '../../redux/slices/patientSlice';
 
 function AuthForm() {
     const dispatch = useDispatch();

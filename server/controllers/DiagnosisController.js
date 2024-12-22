@@ -1,6 +1,6 @@
 // controllers/DiagnosisController.js
 
-const { Diagnosis } = require('../models/models'); 
+const { Diagnosis, Patient, Doctor } = require('../models/models');
 const { validationResult } = require('express-validator');
 
 class DiagnosisController {
@@ -11,17 +11,40 @@ class DiagnosisController {
                 return res.status(400).json({ errors: errors.array() });
             }
 
-            const { name, conclusion } = req.body;
+            const { name, conclusion, patientId } = req.body;
+            const doctorId = req.user.doctorId; // Извлекаем из req.user
 
+            // Логирование для отладки
+            console.log('Создание диагностики для доктора ID:', doctorId);
+
+            // Проверяем, что доктор существует
+            const doctor = await Doctor.findByPk(doctorId);
+            if (!doctor) {
+                console.log('Доктор не найден в базе данных:', doctorId);
+                return res.status(404).json({ message: 'Доктор не найден' });
+            }
+
+            // Проверяем, что пациент существует
+            const patient = await Patient.findByPk(patientId);
+            if (!patient) {
+                console.log('Пациент не найден в базе данных:', patientId);
+                return res.status(404).json({ message: 'Пациент не найден' });
+            }
+
+            // Создаём диагноз
             const diagnosis = await Diagnosis.create({
                 name,
                 conclusion,
+                doctorId,
+                patientId,
             });
 
             res.status(201).json({
                 id: diagnosis.id,
                 name: diagnosis.name,
                 conclusion: diagnosis.conclusion,
+                doctorId: diagnosis.doctorId,
+                patientId: diagnosis.patientId,
                 createdAt: diagnosis.createdAt,
                 updatedAt: diagnosis.updatedAt,
             });
@@ -33,7 +56,18 @@ class DiagnosisController {
 
     async findOne(req, res) {
         try {
-            const diagnosis = await Diagnosis.findByPk(req.params.id);
+            const diagnosis = await Diagnosis.findByPk(req.params.id, {
+                include: [
+                    {
+                        model: Doctor,
+                        attributes: ['id', 'firstName', 'lastName', 'specialization'],
+                    },
+                    {
+                        model: Patient,
+                        attributes: ['id', 'firstName', 'lastName', 'phoneNumber'],
+                    },
+                ],
+            });
             if (!diagnosis) {
                 return res.status(404).json({ message: 'Диагностика не найдена' });
             }
@@ -46,7 +80,43 @@ class DiagnosisController {
 
     async findAll(req, res) {
         try {
-            const diagnoses = await Diagnosis.findAll();
+            const { patientId } = req.query;
+            const { doctorId, patientId: userPatientId } = req.user;
+
+            // Определяем роль пользователя
+            const isDoctor = Boolean(doctorId);
+            const isPatient = Boolean(userPatientId);
+
+            if (!isDoctor && !isPatient) {
+                return res.status(401).json({ message: 'Не авторизован' });
+            }
+
+            const whereClause = {};
+
+            if (isDoctor) {
+                whereClause.doctorId = doctorId;
+                if (patientId) {
+                    whereClause.patientId = patientId;
+                }
+            } else if (isPatient) {
+                whereClause.patientId = userPatientId;
+            }
+
+            const diagnoses = await Diagnosis.findAll({
+                where: whereClause,
+                include: [
+                    {
+                        model: Doctor,
+                        attributes: ['id', 'firstName', 'lastName', 'specialization'],
+                    },
+                    {
+                        model: Patient,
+                        attributes: ['id', 'firstName', 'lastName', 'phoneNumber'],
+                    },
+                ],
+                order: [['createdAt', 'DESC']],
+            });
+
             res.json(diagnoses);
         } catch (error) {
             console.error('Ошибка при получении списка диагностик:', error);
@@ -69,18 +139,32 @@ class DiagnosisController {
                 return res.status(404).json({ message: 'Диагностика не найдена' });
             }
 
+            // Проверяем, что текущий доктор имеет право редактировать этот диагноз
+            if (diagnosis.doctorId !== req.user.doctorId) { // Используем doctorId
+                return res.status(403).json({ message: 'Доступ запрещён' });
+            }
+
+            // Обновляем поля диагноза
             await diagnosis.update({
                 name: name || diagnosis.name,
                 conclusion: conclusion !== undefined ? conclusion : diagnosis.conclusion,
             });
 
-            res.json({
-                id: diagnosis.id,
-                name: diagnosis.name,
-                conclusion: diagnosis.conclusion,
-                createdAt: diagnosis.createdAt,
-                updatedAt: diagnosis.updatedAt,
+            // Извлекаем обновлённый диагноз с включёнными моделями Doctor и Patient
+            const updatedDiagnosis = await Diagnosis.findByPk(diagnosisId, {
+                include: [
+                    {
+                        model: Doctor,
+                        attributes: ['id', 'firstName', 'lastName', 'specialization'],
+                    },
+                    {
+                        model: Patient,
+                        attributes: ['id', 'firstName', 'lastName', 'phoneNumber'],
+                    },
+                ],
             });
+
+            res.json(updatedDiagnosis);
         } catch (error) {
             console.error('Ошибка при обновлении диагностики:', error);
             res.status(500).json({ message: 'Ошибка сервера' });
@@ -94,6 +178,11 @@ class DiagnosisController {
             const diagnosis = await Diagnosis.findByPk(diagnosisId);
             if (!diagnosis) {
                 return res.status(404).json({ message: 'Диагностика не найдена' });
+            }
+
+            // Проверяем, что текущий доктор имеет право удалить этот диагноз
+            if (diagnosis.doctorId !== req.user.doctorId) { // Изменено на doctorId
+                return res.status(403).json({ message: 'Доступ запрещён' });
             }
 
             await diagnosis.destroy();

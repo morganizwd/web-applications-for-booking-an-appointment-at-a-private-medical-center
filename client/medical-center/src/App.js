@@ -4,17 +4,24 @@ import React, { useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { Container } from 'react-bootstrap';
-import Header from './components/Header';
-import AuthForm from './components/AuthForm';
-import Home from './components/Home';
-import DepartmentManagement from './components/DepartmentManagement';
-import ServiceManagement from './components/ServiceManagement';
+import Header from './components/extra/Header';
+import AuthForm from './components/auth/AuthForm';
+import Home from './components/patient/Home';
+import DepartmentManagement from './components/admin/DepartmentManagement';
+import ServiceManagement from './components/admin/ServiceManagement';
 import ProtectedRouteAdmin from './components/protected/ProtectedRouteAdmin';
 import ProtectedRoutePatient from './components/protected/ProtectedRoutePatient';
 import ProtectedRouteDoctor from './components/protected/ProtectedRouteDoctor';
+import Footer from './components/extra/Footer';
+import PatientProfile from './components/patient/PatientProfile';
+import DoctorDetails from './components/patient/DoctorDetails';
+import AdminDoctorSchedule from './components/admin/AdminDoctorSchedule';
+import DoctorDashboard from './components/doc/DoctorDashboard';
+import AdminAppointments from './components/admin/AdminAppointments';
+import AdminDashboard from './components/admin/UsersList'; 
 import { auth as adminAuth } from './redux/slices/adminSlice';
 import { auth as doctorAuth } from './redux/slices/doctorSlice';
-import { auth as patientAuth } from './redux/slices/patientSlice'; // Импортируйте auth для patient
+import { auth as patientAuth } from './redux/slices/patientSlice';
 
 function App() {
   const dispatch = useDispatch();
@@ -24,41 +31,58 @@ function App() {
     const role = localStorage.getItem('role');
 
     if (token && role === 'admin') {
-      dispatch(adminAuth()); // Авторизация админа
+      dispatch(adminAuth());
     } else if (token && role === 'doctor') {
-      dispatch(doctorAuth()); // Авторизация доктора
+      dispatch(doctorAuth());
     } else if (token && role === 'patient') {
-      dispatch(patientAuth()); // Авторизация пациента
+      dispatch(patientAuth());
     }
-    // Если нужна логика для других ролей, добавьте аналогично
   }, [dispatch]);
 
   return (
     <Router>
       <Header />
-      <Container>
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/auth" element={<AuthForm />} />
-          <Route
-            path="/departments"
-            element={
-              <ProtectedRouteAdmin>
-                <DepartmentManagement />
-              </ProtectedRouteAdmin>
-            }
-          />
-          <Route
-            path="/services"
-            element={
-              <ProtectedRouteAdmin>
-                <ServiceManagement />
-              </ProtectedRouteAdmin>
-            }
-          />
-          {/* Другие маршруты */}
-        </Routes>
-      </Container>
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/auth" element={<AuthForm />} />
+        <Route
+          path='/doctors/:id'
+          element={
+            <DoctorDetails></DoctorDetails>
+          }
+        />
+        <Route
+          path="/departments"
+          element={
+            <ProtectedRouteAdmin>
+              <DepartmentManagement />
+            </ProtectedRouteAdmin>
+          }
+        />
+        <Route
+          path="/services"
+          element={
+            <ProtectedRouteAdmin>
+              <ServiceManagement />
+            </ProtectedRouteAdmin>
+          }
+        />
+        <Route
+          path="/admin-schedule"
+          element={
+            <ProtectedRouteAdmin>
+              <AdminDoctorSchedule />
+            </ProtectedRouteAdmin>
+          }
+        />
+        <Route path='/admin-users' element={<ProtectedRouteAdmin><AdminDashboard></AdminDashboard></ProtectedRouteAdmin>} />
+        <Route path='/admin-appointments' element={<ProtectedRouteAdmin><AdminAppointments></AdminAppointments></ProtectedRouteAdmin>} />
+        <Route path='/doctor-dashboard' element={<ProtectedRouteDoctor><DoctorDashboard></DoctorDashboard></ProtectedRouteDoctor>} />
+        <Route path='/profile' element={<ProtectedRoutePatient><PatientProfile></PatientProfile></ProtectedRoutePatient>} />
+        {/* Другие маршруты */}
+      </Routes>
+
+      <Footer />
     </Router>
   );
 }

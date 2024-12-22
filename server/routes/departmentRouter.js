@@ -7,7 +7,7 @@ const router = express.Router();
 
 router.post(
     '/create',
-    authenticateToken, 
+    authenticateToken,
     [
         body('name').notEmpty().withMessage('Название отдела обязательно'),
     ],
@@ -16,7 +16,7 @@ router.post(
 
 router.get('/:id', authenticateToken, DepartmentController.findOne);
 
-router.get('/', authenticateToken, DepartmentController.findAll);
+router.get('/', DepartmentController.findAll);
 
 router.put(
     '/:id',

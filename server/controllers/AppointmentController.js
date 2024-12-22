@@ -1,6 +1,6 @@
 // controllers/AppointmentController.js
 
-const { Appointment, Doctor, Patient } = require('../models/models');
+const { Appointment, Doctor, Patient, Service } = require('../models/models');
 const { validationResult } = require('express-validator');
 
 class AppointmentController {
@@ -11,7 +11,8 @@ class AppointmentController {
                 return res.status(400).json({ errors: errors.array() });
             }
 
-            const { date, doctorId, patientId } = req.body;
+            // Извлекаем ВСЕ поля, включая serviceId:
+            const { date, doctorId, patientId, serviceId } = req.body;
 
             const doctor = await Doctor.findByPk(doctorId);
             if (!doctor) {
@@ -23,37 +24,49 @@ class AppointmentController {
                 return res.status(404).json({ message: 'Пациент не найден' });
             }
 
+            // Проверяем, что такая услуга существует:
+            const service = await Service.findByPk(serviceId);
+            if (!service) {
+                return res.status(404).json({ message: 'Услуга не найдена' });
+            }
+
             if (new Date(date) <= new Date()) {
-                return res.status(400).json({ message: 'Дата приема должна быть в будущем' });
+                return res
+                    .status(400)
+                    .json({ message: 'Дата приема должна быть в будущем' });
             }
 
             const conflictingAppointment = await Appointment.findOne({
                 where: {
                     doctorId,
-                    date: date,
+                    date,
                 },
             });
             if (conflictingAppointment) {
-                return res.status(400).json({ message: 'Врач уже занят в указанное время' });
+                return res
+                    .status(400)
+                    .json({ message: 'Врач уже занят в указанное время' });
             }
 
             const appointment = await Appointment.create({
                 date,
                 doctorId,
                 patientId,
+                serviceId,
             });
 
-            res.status(201).json({
+            return res.status(201).json({
                 id: appointment.id,
                 date: appointment.date,
                 doctorId: appointment.doctorId,
                 patientId: appointment.patientId,
+                serviceId: appointment.serviceId,
                 createdAt: appointment.createdAt,
                 updatedAt: appointment.updatedAt,
             });
         } catch (error) {
             console.error('Ошибка при создании приема:', error);
-            res.status(500).json({ message: 'Ошибка сервера' });
+            return res.status(500).json({ message: 'Ошибка сервера' });
         }
     }
 
@@ -83,7 +96,23 @@ class AppointmentController {
 
     async findAll(req, res) {
         try {
+            const { doctorId, date, excludeId } = req.query;
+            const whereClause = {};
+
+            if (doctorId) {
+                whereClause.doctorId = doctorId;
+            }
+
+            if (date) {
+                whereClause.date = date;
+            }
+
+            if (excludeId) {
+                whereClause.id = { [Op.ne]: excludeId };
+            }
+
             const appointments = await Appointment.findAll({
+                where: whereClause,
                 include: [
                     {
                         model: Doctor,
@@ -92,6 +121,10 @@ class AppointmentController {
                     {
                         model: Patient,
                         attributes: ['id', 'firstName', 'lastName', 'phoneNumber'],
+                    },
+                    {
+                        model: Service,
+                        attributes: ['id', 'name', 'price'],
                     },
                 ],
                 order: [['date', 'ASC']],
@@ -144,7 +177,7 @@ class AppointmentController {
                     where: {
                         doctorId: newDoctorId,
                         date: newDate,
-                        id: { [require('sequelize').Op.ne]: appointmentId }, 
+                        id: { [require('sequelize').Op.ne]: appointmentId },
                     },
                 });
                 if (conflictingAppointment) {

@@ -1,7 +1,7 @@
 // models/index.js
 
 const { Sequelize, DataTypes, Op } = require('sequelize');
-const sequelize = require('../db'); 
+const sequelize = require('../db');
 
 const Admin = sequelize.define('Admin', {
     id: {
@@ -148,18 +148,30 @@ const Department = sequelize.define('Department', {
     timestamps: true,
 });
 
+// models/index.js
+
 const DoctorSchedule = sequelize.define('DoctorSchedule', {
     id: {
         type: DataTypes.INTEGER,
         primaryKey: true,
         autoIncrement: true,
     },
-    dayOfWeek: { 
+    doctorId: { // Добавляем это поле
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        references: {
+            model: Doctor,
+            key: 'id',
+        },
+        onUpdate: 'CASCADE',
+        onDelete: 'CASCADE',
+    },
+    dayOfWeek: {
         type: DataTypes.INTEGER,
         allowNull: false,
         validate: {
-            min: 0,
-            max: 5,
+            min: 1, // Понедельник
+            max: 5, // Пятница
         },
     },
     startTime: {
@@ -224,6 +236,26 @@ const Diagnosis = sequelize.define('Diagnosis', {
             len: [0, 500],
         },
     },
+    patientId: { // Добавлено
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        references: {
+            model: 'Patients',
+            key: 'id',
+        },
+        onUpdate: 'CASCADE',
+        onDelete: 'CASCADE',
+    },
+    doctorId: { // Добавлено
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        references: {
+            model: 'Doctors',
+            key: 'id',
+        },
+        onUpdate: 'CASCADE',
+        onDelete: 'CASCADE',
+    },
 }, {
     timestamps: true,
 });
@@ -239,7 +271,7 @@ const Appointment = sequelize.define('Appointment', {
         allowNull: false,
         validate: {
             isDate: true,
-            isAfter: new Date().toISOString(), 
+            isAfter: new Date().toISOString(),
         },
     },
     doctorId: {
@@ -278,7 +310,7 @@ const Appointment = sequelize.define('Appointment', {
 
 Doctor.belongsTo(Department, {
     foreignKey: {
-        name: 'departmentId', 
+        name: 'departmentId',
         allowNull: false,
     },
     onDelete: 'CASCADE',
@@ -286,7 +318,7 @@ Doctor.belongsTo(Department, {
 });
 Department.hasMany(Doctor, {
     foreignKey: {
-        name: 'departmentId', 
+        name: 'departmentId',
         allowNull: false,
     },
     onDelete: 'CASCADE',
@@ -294,34 +326,35 @@ Department.hasMany(Doctor, {
 });
 
 Doctor.hasMany(DoctorSchedule, {
-    foreignKey: { allowNull: false },
+    foreignKey: 'doctorId', // Указываем явное имя внешнего ключа
     onDelete: 'CASCADE',
     onUpdate: 'CASCADE',
 });
 DoctorSchedule.belongsTo(Doctor, {
-    foreignKey: { allowNull: false },
+    foreignKey: 'doctorId', // Указываем явное имя внешнего ключа
     onDelete: 'CASCADE',
     onUpdate: 'CASCADE',
 });
 
 Doctor.hasMany(Appointment, {
-    foreignKey: { allowNull: false },
+    foreignKey: 'doctorId',       // <-- чтобы точно совпадало с тем, что в Appointment описано
     onDelete: 'CASCADE',
     onUpdate: 'CASCADE',
 });
+
 Appointment.belongsTo(Doctor, {
-    foreignKey: { allowNull: false },
+    foreignKey: 'doctorId',       // <-- явное указание
     onDelete: 'CASCADE',
     onUpdate: 'CASCADE',
 });
 
 Patient.hasMany(Appointment, {
-    foreignKey: { allowNull: false },
+    foreignKey: 'patientId',
     onDelete: 'CASCADE',
     onUpdate: 'CASCADE',
 });
 Appointment.belongsTo(Patient, {
-    foreignKey: { allowNull: false },
+    foreignKey: 'patientId',
     onDelete: 'CASCADE',
     onUpdate: 'CASCADE',
 });
@@ -344,34 +377,46 @@ Department.hasMany(Service, {
 });
 
 Service.hasMany(Appointment, {
-    foreignKey: { allowNull: false },
+    foreignKey: 'serviceId',
     onDelete: 'CASCADE',
     onUpdate: 'CASCADE',
 });
 Appointment.belongsTo(Service, {
-    foreignKey: { allowNull: false },
+    foreignKey: 'serviceId',
     onDelete: 'CASCADE',
     onUpdate: 'CASCADE',
 });
 
 Diagnosis.belongsTo(Patient, {
-    foreignKey: { allowNull: false },
+    foreignKey: {
+        name: 'patientId',
+        allowNull: false,
+    },
     onDelete: 'CASCADE',
     onUpdate: 'CASCADE',
 });
 Patient.hasMany(Diagnosis, {
-    foreignKey: { allowNull: false },
+    foreignKey: {
+        name: 'patientId',
+        allowNull: false,
+    },
     onDelete: 'CASCADE',
     onUpdate: 'CASCADE',
 });
 
 Diagnosis.belongsTo(Doctor, {
-    foreignKey: { allowNull: false },
+    foreignKey: {
+        name: 'doctorId',
+        allowNull: false,
+    },
     onDelete: 'CASCADE',
     onUpdate: 'CASCADE',
 });
 Doctor.hasMany(Diagnosis, {
-    foreignKey: { allowNull: false },
+    foreignKey: {
+        name: 'doctorId',
+        allowNull: false,
+    },
     onDelete: 'CASCADE',
     onUpdate: 'CASCADE',
 });

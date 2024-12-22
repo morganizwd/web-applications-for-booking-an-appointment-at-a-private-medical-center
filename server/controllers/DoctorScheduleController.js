@@ -11,6 +11,11 @@ class DoctorScheduleController {
 
             const { doctorId, dayOfWeek, startTime, endTime } = req.body;
 
+            // Проверка, что день недели является рабочим (1-5)
+            if (dayOfWeek < 1 || dayOfWeek > 5) {
+                return res.status(400).json({ message: 'День недели должен быть с 1 (Понедельник) по 5 (Пятница)' });
+            }
+
             const doctor = await Doctor.findByPk(doctorId);
             if (!doctor) {
                 return res.status(404).json({ message: 'Врач не найден' });
@@ -38,6 +43,61 @@ class DoctorScheduleController {
             });
         } catch (error) {
             console.error('Ошибка при создании расписания врача:', error);
+            res.status(500).json({ message: 'Ошибка сервера' });
+        }
+    }
+
+    async update(req, res) {
+        try {
+            const { doctorId, dayOfWeek, startTime, endTime } = req.body;
+            const scheduleId = req.params.id;
+
+            const errors = validationResult(req);
+            if (!errors.isEmpty()) {
+                return res.status(400).json({ errors: errors.array() });
+            }
+
+            const schedule = await DoctorSchedule.findByPk(scheduleId);
+            if (!schedule) {
+                return res.status(404).json({ message: 'Расписание не найдено' });
+            }
+
+            if (doctorId && doctorId !== schedule.doctorId) {
+                const doctor = await Doctor.findByPk(doctorId);
+                if (!doctor) {
+                    return res.status(404).json({ message: 'Врач не найден' });
+                }
+            }
+
+            if (dayOfWeek !== undefined) {
+                // Проверка, что день недели является рабочим (1-5)
+                if (dayOfWeek < 1 || dayOfWeek > 5) {
+                    return res.status(400).json({ message: 'День недели должен быть с 1 (Понедельник) по 5 (Пятница)' });
+                }
+            }
+
+            if (startTime && endTime && startTime >= endTime) {
+                return res.status(400).json({ message: 'Время начала должно быть раньше времени окончания' });
+            }
+
+            await schedule.update({
+                doctorId: doctorId || schedule.doctorId,
+                dayOfWeek: dayOfWeek !== undefined ? dayOfWeek : schedule.dayOfWeek,
+                startTime: startTime || schedule.startTime,
+                endTime: endTime || schedule.endTime,
+            });
+
+            res.json({
+                id: schedule.id,
+                doctorId: schedule.doctorId,
+                dayOfWeek: schedule.dayOfWeek,
+                startTime: schedule.startTime,
+                endTime: schedule.endTime,
+                createdAt: schedule.createdAt,
+                updatedAt: schedule.updatedAt,
+            });
+        } catch (error) {
+            console.error('Ошибка при обновлении расписания врача:', error);
             res.status(500).json({ message: 'Ошибка сервера' });
         }
     }
@@ -71,54 +131,6 @@ class DoctorScheduleController {
             res.json(schedules);
         } catch (error) {
             console.error('Ошибка при получении списка расписаний:', error);
-            res.status(500).json({ message: 'Ошибка сервера' });
-        }
-    }
-
-    async update(req, res) {
-        try {
-            const { doctorId, dayOfWeek, startTime, endTime } = req.body;
-            const scheduleId = req.params.id;
-
-            const errors = validationResult(req);
-            if (!errors.isEmpty()) {
-                return res.status(400).json({ errors: errors.array() });
-            }
-
-            const schedule = await DoctorSchedule.findByPk(scheduleId);
-            if (!schedule) {
-                return res.status(404).json({ message: 'Расписание не найдено' });
-            }
-
-            if (doctorId && doctorId !== schedule.doctorId) {
-                const doctor = await Doctor.findByPk(doctorId);
-                if (!doctor) {
-                    return res.status(404).json({ message: 'Врач не найден' });
-                }
-            }
-
-            if (startTime && endTime && startTime >= endTime) {
-                return res.status(400).json({ message: 'Время начала должно быть раньше времени окончания' });
-            }
-
-            await schedule.update({
-                doctorId: doctorId || schedule.doctorId,
-                dayOfWeek: dayOfWeek !== undefined ? dayOfWeek : schedule.dayOfWeek,
-                startTime: startTime || schedule.startTime,
-                endTime: endTime || schedule.endTime,
-            });
-
-            res.json({
-                id: schedule.id,
-                doctorId: schedule.doctorId,
-                dayOfWeek: schedule.dayOfWeek,
-                startTime: schedule.startTime,
-                endTime: schedule.endTime,
-                createdAt: schedule.createdAt,
-                updatedAt: schedule.updatedAt,
-            });
-        } catch (error) {
-            console.error('Ошибка при обновлении расписания врача:', error);
             res.status(500).json({ message: 'Ошибка сервера' });
         }
     }
