@@ -150,10 +150,11 @@ const adminSlice = createSlice({
                 state.error = null;
             })
             .addCase(registration.fulfilled, (state, action) => {
+                console.log('Registration success payload:', action.payload); 
                 state.status = 'succeeded';
-                state.admin = action.payload.admin;
+                state.admin = action.payload;  
                 localStorage.setItem('token', action.payload.token);
-                localStorage.setItem('role', action.payload.admin.role); 
+                localStorage.setItem('role', action.payload.role); 
                 axios.defaults.headers.common['Authorization'] = `Bearer ${action.payload.token}`;
             })
             .addCase(registration.rejected, (state, action) => {

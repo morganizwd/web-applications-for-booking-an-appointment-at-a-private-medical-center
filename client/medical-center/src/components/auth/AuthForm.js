@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import axios from '../../redux/axios'; 
 
-
 import {
     TextField,
     Select,
@@ -14,7 +13,6 @@ import {
     Alert,
     Box,
 } from '@mui/material';
-
 
 import {
     registration as adminRegistration,
@@ -40,16 +38,12 @@ import {
 function AuthForm() {
     const dispatch = useDispatch();
 
-    
     const [isRegistration, setIsRegistration] = useState(true);
-    
     const [role, setRole] = useState('admin'); 
 
-    
     const [login, setLogin] = useState('');
     const [password, setPassword] = useState('');
 
-    
     const [firstName, setFirstName] = useState('');
     const [lastName, setLastName] = useState('');
     const [specialization, setSpecialization] = useState(''); 
@@ -57,15 +51,12 @@ function AuthForm() {
     const [address, setAddress] = useState('');               
     const [age, setAge] = useState('');                       
 
-    
     const [departments, setDepartments] = useState([]);       
     const [selectedDepartment, setSelectedDepartment] = useState('');
 
-    
     const [photo, setPhoto] = useState(null);
     const [photoPreview, setPhotoPreview] = useState(null);
 
-    
     const adminStatus = useSelector(selectAdminStatus);
     const adminError = useSelector(selectAdminError);
 
@@ -75,7 +66,8 @@ function AuthForm() {
     const patientStatus = useSelector(selectPatientStatus);
     const patientError = useSelector(selectPatientError);
 
-    
+    const [registrationSuccess, setRegistrationSuccess] = useState(false);
+
     let currentStatus, currentError;
     switch (role) {
         case 'admin':
@@ -95,10 +87,7 @@ function AuthForm() {
             currentError = null;
     }
 
-    
     useEffect(() => {
-        
-        
         const fetchDepartments = async () => {
             try {
                 const { data } = await axios.get('/departments'); 
@@ -111,11 +100,35 @@ function AuthForm() {
         fetchDepartments();
     }, []);
 
-    
+    useEffect(() => {
+        if (isRegistration && currentStatus === 'succeeded') {
+            setRegistrationSuccess(true); 
+
+            const timer = setTimeout(() => {
+                setRegistrationSuccess(false);
+                setIsRegistration(false);
+                
+                // Очистка полей формы
+                setLogin('');
+                setPassword('');
+                setFirstName('');
+                setLastName('');
+                setSpecialization('');
+                setPhoneNumber('');
+                setAddress('');
+                setAge('');
+                setPhoto(null);
+                setPhotoPreview(null);
+                setSelectedDepartment('');
+            }, 1500); // Задержка 1.5 секунды
+
+            return () => clearTimeout(timer); 
+        }
+    }, [currentStatus, isRegistration]);
+
     const handleSubmit = (e) => {
         e.preventDefault();
 
-        
         const formData = new FormData();
         formData.append('login', login);
         formData.append('password', password);
@@ -138,11 +151,8 @@ function AuthForm() {
             }
         }
 
-        
-        
         if (isRegistration) {
             if (role === 'admin') {
-                
                 dispatch(adminRegistration({ login, password }));
             } else if (role === 'doctor') {
                 dispatch(doctorRegistration(formData));
@@ -150,7 +160,6 @@ function AuthForm() {
                 dispatch(patientRegistration(formData));
             }
         } else {
-            
             if (role === 'admin') {
                 dispatch(adminLogin({ login, password }));
             } else if (role === 'doctor') {
@@ -161,7 +170,6 @@ function AuthForm() {
         }
     };
 
-    
     const handlePhotoChange = (e) => {
         const file = e.target.files[0];
         if (file) {
@@ -175,9 +183,7 @@ function AuthForm() {
         }
     };
 
-    
     const renderExtraFields = () => {
-        
         if (!isRegistration) return null;
 
         return (
@@ -358,11 +364,18 @@ function AuthForm() {
                     label="Роль"
                     onChange={(e) => setRole(e.target.value)}
                 >
-                    <MenuItem value="admin">Admin</MenuItem>
-                    <MenuItem value="doctor">Doctor</MenuItem>
-                    <MenuItem value="patient">Patient</MenuItem>
+                    <MenuItem value="admin">Администратор</MenuItem>
+                    <MenuItem value="doctor">Врач</MenuItem>
+                    <MenuItem value="patient">Пациент</MenuItem>
                 </Select>
             </FormControl>
+
+            {/* Отображение уведомления об успешной регистрации */}
+            {registrationSuccess && (
+                <Alert severity="success" className="mb-3">
+                    Регистрация прошла успешно! Переход на форму входа...
+                </Alert>
+            )}
 
             <form onSubmit={handleSubmit}>
                 <TextField
