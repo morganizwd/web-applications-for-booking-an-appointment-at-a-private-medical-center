@@ -1,4 +1,4 @@
-// controllers/DiagnosisController.js
+
 
 const { Diagnosis, Patient, Doctor } = require('../models/models');
 const { validationResult } = require('express-validator');
@@ -12,26 +12,26 @@ class DiagnosisController {
             }
 
             const { name, conclusion, patientId } = req.body;
-            const doctorId = req.user.doctorId; // Извлекаем из req.user
+            const doctorId = req.user.doctorId; 
 
-            // Логирование для отладки
+            
             console.log('Создание диагностики для доктора ID:', doctorId);
 
-            // Проверяем, что доктор существует
+            
             const doctor = await Doctor.findByPk(doctorId);
             if (!doctor) {
                 console.log('Доктор не найден в базе данных:', doctorId);
                 return res.status(404).json({ message: 'Доктор не найден' });
             }
 
-            // Проверяем, что пациент существует
+            
             const patient = await Patient.findByPk(patientId);
             if (!patient) {
                 console.log('Пациент не найден в базе данных:', patientId);
                 return res.status(404).json({ message: 'Пациент не найден' });
             }
 
-            // Создаём диагноз
+            
             const diagnosis = await Diagnosis.create({
                 name,
                 conclusion,
@@ -83,7 +83,7 @@ class DiagnosisController {
             const { patientId } = req.query;
             const { doctorId, patientId: userPatientId } = req.user;
 
-            // Определяем роль пользователя
+            
             const isDoctor = Boolean(doctorId);
             const isPatient = Boolean(userPatientId);
 
@@ -139,18 +139,18 @@ class DiagnosisController {
                 return res.status(404).json({ message: 'Диагностика не найдена' });
             }
 
-            // Проверяем, что текущий доктор имеет право редактировать этот диагноз
-            if (diagnosis.doctorId !== req.user.doctorId) { // Используем doctorId
+            
+            if (diagnosis.doctorId !== req.user.doctorId) { 
                 return res.status(403).json({ message: 'Доступ запрещён' });
             }
 
-            // Обновляем поля диагноза
+            
             await diagnosis.update({
                 name: name || diagnosis.name,
                 conclusion: conclusion !== undefined ? conclusion : diagnosis.conclusion,
             });
 
-            // Извлекаем обновлённый диагноз с включёнными моделями Doctor и Patient
+            
             const updatedDiagnosis = await Diagnosis.findByPk(diagnosisId, {
                 include: [
                     {
@@ -180,8 +180,8 @@ class DiagnosisController {
                 return res.status(404).json({ message: 'Диагностика не найдена' });
             }
 
-            // Проверяем, что текущий доктор имеет право удалить этот диагноз
-            if (diagnosis.doctorId !== req.user.doctorId) { // Изменено на doctorId
+            
+            if (diagnosis.doctorId !== req.user.doctorId) { 
                 return res.status(403).json({ message: 'Доступ запрещён' });
             }
 

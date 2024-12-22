@@ -1,11 +1,9 @@
-// src/components/Header.js
-
 import React from 'react';
 import { Navbar, Nav, NavDropdown, Button, Container } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 
-// Import selectors and actions from slices
+
 import {
     logout as adminLogout,
     selectIsAuth as selectIsAuthAdmin,
@@ -24,7 +22,7 @@ import {
 function Header() {
     const dispatch = useDispatch();
 
-    // Check authentication status for each role
+
     const isAdminAuth = useSelector(selectIsAuthAdmin);
     const isDoctorAuth = useSelector(selectIsAuthDoctor);
     const isPatientAuth = useSelector(selectIsAuthPatient);
@@ -33,7 +31,7 @@ function Header() {
     console.log('Header isDoctorAuth:', isDoctorAuth);
     console.log('Header isPatientAuth:', isPatientAuth);
 
-    // Determine if any user is authenticated
+
     const isAuth = isAdminAuth || isDoctorAuth || isPatientAuth;
 
     const handleLogout = () => {
@@ -46,9 +44,6 @@ function Header() {
         if (isPatientAuth) {
             dispatch(patientLogout());
         }
-        // Optionally, you can redirect or perform other actions after logout
-        // For example:
-        // window.location.href = '/';
     };
 
     return (

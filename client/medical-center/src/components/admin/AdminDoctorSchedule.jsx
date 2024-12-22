@@ -1,5 +1,3 @@
-// src/components/AdminDoctorSchedule.jsx
-
 import React, { useEffect, useState } from 'react';
 import {
   Container,
@@ -12,26 +10,26 @@ import {
   Row,
   Col,
 } from 'react-bootstrap';
-import axios from '../../redux/axios'; // Используем настроенный axios
-import * as XLSX from 'xlsx';       // Для экспорта в Excel
+import axios from '../../redux/axios'; 
+import * as XLSX from 'xlsx';       
 
 const AdminDoctorSchedule = () => {
   const [schedules, setSchedules] = useState([]);
-  const [doctors, setDoctors] = useState([]); // Состояние для списка врачей
+  const [doctors, setDoctors] = useState([]); 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Фильтр по врачу
+  
   const [filterDoctorId, setFilterDoctorId] = useState('');
-  // Фильтр по дню недели
+  
   const [filterDayOfWeek, setFilterDayOfWeek] = useState('');
 
-  // Модальные окна для добавления и редактирования расписания
+  
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [currentSchedule, setCurrentSchedule] = useState(null);
 
-  // Форма для добавления/редактирования
+  
   const [formData, setFormData] = useState({
     doctorId: '',
     dayOfWeek: '',
@@ -42,11 +40,11 @@ const AdminDoctorSchedule = () => {
   const [formErrors, setFormErrors] = useState([]);
 
   useEffect(() => {
-    fetchDoctors();    // Загрузка списка врачей
-    fetchSchedules();  // Загрузка расписаний
+    fetchDoctors();    
+    fetchSchedules();  
   }, []);
 
-  // Функция для загрузки списка врачей
+  
   const fetchDoctors = async () => {
     try {
       const response = await axios.get('/doctors');
@@ -57,7 +55,7 @@ const AdminDoctorSchedule = () => {
     }
   };
 
-  // Функция для загрузки расписаний
+  
   const fetchSchedules = async () => {
     try {
       const response = await axios.get('/doctor-schedules');
@@ -70,7 +68,7 @@ const AdminDoctorSchedule = () => {
     }
   };
 
-  // --- Обработчики для модалок ---
+  
   const handleShowAddModal = () => {
     setFormData({
       doctorId: '',
@@ -100,7 +98,7 @@ const AdminDoctorSchedule = () => {
     setCurrentSchedule(null);
   };
 
-  // --- Форма (добавление/редактирование) ---
+  
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prevState) => ({
@@ -163,7 +161,7 @@ const AdminDoctorSchedule = () => {
     }
   };
 
-  // --- Фильтрация ---
+  
   const handleFilterDoctor = (e) => {
     setFilterDoctorId(e.target.value);
   };
@@ -172,12 +170,12 @@ const AdminDoctorSchedule = () => {
     setFilterDayOfWeek(e.target.value);
   };
 
-  // Получаем отфильтрованные расписания
+  
   const filteredSchedules = schedules
     .filter((sch) => (filterDoctorId ? sch.doctorId === Number(filterDoctorId) : true))
     .filter((sch) => (filterDayOfWeek ? sch.dayOfWeek === Number(filterDayOfWeek) : true));
 
-  // --- Экспорт в Excel ---
+  
   const handleExportExcel = () => {
     try {
       const dataForExcel = filteredSchedules.map((sch) => ({
@@ -214,10 +212,10 @@ const AdminDoctorSchedule = () => {
     }
   };
 
-  // --- Экспорт в Word ---
+  
   const handleExportWord = () => {
     try {
-      // Генерируем HTML-таблицу для сохранения в .doc
+      
       let tableHTML = `
         <table border="1" style="border-collapse: collapse; width: 100%;">
           <thead>
@@ -259,7 +257,7 @@ const AdminDoctorSchedule = () => {
 
       tableHTML += `</tbody></table>`;
 
-      // Оборачиваем в базовый HTML
+      
       const htmlContent = `
         <html>
           <head>
@@ -273,7 +271,7 @@ const AdminDoctorSchedule = () => {
         </html>
       `;
 
-      // Создаём Blob с типом "application/msword"
+      
       const blob = new Blob([htmlContent], {
         type: 'application/msword;charset=utf-8',
       });

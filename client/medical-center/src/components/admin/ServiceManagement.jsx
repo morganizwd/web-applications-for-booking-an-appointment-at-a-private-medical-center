@@ -1,9 +1,7 @@
-// src/components/ServiceManagement.jsx
-
 import React, { useEffect, useState } from 'react';
-import axios from '../../redux/axios'; // Убедитесь, что путь правильный
+import axios from '../../redux/axios'; 
 
-// Импортируем необходимые компоненты из MUI
+
 import {
     TextField,
     Select,
@@ -30,42 +28,42 @@ import {
     Box,
 } from '@mui/material';
 
-// Иконки MUI
+
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 
 function ServiceManagement() {
-    // Состояние для списка услуг
+    
     const [services, setServices] = useState([]);
-    // Состояния для создания новой услуги
+    
     const [newServiceName, setNewServiceName] = useState('');
     const [newServicePrice, setNewServicePrice] = useState('');
     const [newServiceDepartment, setNewServiceDepartment] = useState('');
     const [newServicePhoto, setNewServicePhoto] = useState(null);
     const [newServicePhotoPreview, setNewServicePhotoPreview] = useState(null);
-    // Состояния для редактирования услуги
+    
     const [editServiceId, setEditServiceId] = useState(null);
     const [editServiceName, setEditServiceName] = useState('');
     const [editServicePrice, setEditServicePrice] = useState('');
     const [editServiceDepartment, setEditServiceDepartment] = useState('');
     const [editServicePhoto, setEditServicePhoto] = useState(null);
     const [editServicePhotoPreview, setEditServicePhotoPreview] = useState(null);
-    // Состояние для удаления услуги
+    
     const [deleteServiceId, setDeleteServiceId] = useState(null);
-    // Состояние загрузки
+    
     const [loading, setLoading] = useState(false);
-    // Состояние ошибок и успехов
+    
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
 
-    // Состояния для диалогов
+    
     const [openEditDialog, setOpenEditDialog] = useState(false);
     const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
 
-    // Список отделений для выпадающего списка
+    
     const [departments, setDepartmentsList] = useState([]);
 
-    // Функция для получения списка отделений
+    
     const fetchDepartments = async () => {
         try {
             const response = await axios.get('/departments');
@@ -76,7 +74,7 @@ function ServiceManagement() {
         }
     };
 
-    // Функция для получения всех услуг
+    
     const fetchServices = async () => {
         setLoading(true);
         setError('');
@@ -93,7 +91,7 @@ function ServiceManagement() {
         }
     };
 
-    // Получение отделений и услуг при монтировании компонента
+    
     useEffect(() => {
         const initialize = async () => {
             const departmentsData = await fetchDepartments();
@@ -103,28 +101,28 @@ function ServiceManagement() {
         initialize();
     }, []);
 
-    // Обработчик создания новой услуги
+    
     const handleCreateService = async (e) => {
         e.preventDefault();
         setError('');
         setSuccess('');
 
-        // Валидация
+        
         if (!newServiceName.trim() || !newServicePrice || !newServiceDepartment) {
             setError('Пожалуйста, заполните все обязательные поля.');
             return;
         }
 
-        // Создание FormData
+        
         const formData = new FormData();
         formData.append('name', newServiceName.trim());
         formData.append('price', parseFloat(newServicePrice));
-        formData.append('departmentId', newServiceDepartment); // Корректно устанавливаем departmentId
+        formData.append('departmentId', newServiceDepartment); 
         if (newServicePhoto) {
             formData.append('photo', newServicePhoto);
         }
 
-        // Логирование отправляемых данных
+        
         console.log('Отправляемые данные для создания услуги:', {
             name: newServiceName.trim(),
             price: parseFloat(newServicePrice),
@@ -140,13 +138,13 @@ function ServiceManagement() {
                 },
             });
             setSuccess('Услуга успешно создана.');
-            // Сброс полей формы
+            
             setNewServiceName('');
             setNewServicePrice('');
             setNewServiceDepartment('');
             setNewServicePhoto(null);
             setNewServicePhotoPreview(null);
-            // Обновление списка услуг
+            
             fetchServices();
         } catch (err) {
             setError(
@@ -158,7 +156,7 @@ function ServiceManagement() {
         }
     };
 
-    // Обработчик изменения фото для создания
+    
     const handleNewServicePhotoChange = (e) => {
         const file = e.target.files[0];
         if (file) {
@@ -171,7 +169,7 @@ function ServiceManagement() {
         }
     };
 
-    // Обработчик открытия диалога редактирования
+    
     const handleOpenEditDialog = (service) => {
         setEditServiceId(service.id);
         setEditServiceName(service.name);
@@ -182,7 +180,7 @@ function ServiceManagement() {
         setOpenEditDialog(true);
     };
 
-    // Обработчик закрытия диалога редактирования
+    
     const handleCloseEditDialog = () => {
         setOpenEditDialog(false);
         setEditServiceId(null);
@@ -193,18 +191,18 @@ function ServiceManagement() {
         setEditServicePhotoPreview(null);
     };
 
-    // Обработчик обновления услуги
+    
     const handleUpdateService = async () => {
         setError('');
         setSuccess('');
 
-        // Валидация
+        
         if (!editServiceName.trim() || !editServicePrice || !editServiceDepartment) {
             setError('Пожалуйста, заполните все обязательные поля.');
             return;
         }
 
-        // Создание FormData
+        
         const formData = new FormData();
         formData.append('name', editServiceName.trim());
         formData.append('price', parseFloat(editServicePrice));
@@ -222,7 +220,7 @@ function ServiceManagement() {
             });
             setSuccess('Услуга успешно обновлена.');
             handleCloseEditDialog();
-            // Обновление списка услуг
+            
             fetchServices();
         } catch (err) {
             setError(
@@ -234,7 +232,7 @@ function ServiceManagement() {
         }
     };
 
-    // Обработчик изменения фото для редактирования
+    
     const handleEditServicePhotoChange = (e) => {
         const file = e.target.files[0];
         if (file) {
@@ -247,19 +245,19 @@ function ServiceManagement() {
         }
     };
 
-    // Обработчик открытия диалога удаления
+    
     const handleOpenDeleteDialog = (serviceId) => {
         setDeleteServiceId(serviceId);
         setOpenDeleteDialog(true);
     };
 
-    // Обработчик закрытия диалога удаления
+    
     const handleCloseDeleteDialog = () => {
         setOpenDeleteDialog(false);
         setDeleteServiceId(null);
     };
 
-    // Обработчик удаления услуги
+    
     const handleDeleteService = async () => {
         setError('');
         setSuccess('');
@@ -268,7 +266,7 @@ function ServiceManagement() {
             await axios.delete(`/services/${deleteServiceId}`);
             setSuccess('Услуга успешно удалена.');
             handleCloseDeleteDialog();
-            // Обновление списка услуг
+            
             fetchServices();
         } catch (err) {
             setError(

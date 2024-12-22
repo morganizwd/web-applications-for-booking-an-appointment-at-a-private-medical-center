@@ -1,11 +1,6 @@
-// src/redux/slices/patientSlice.js
-
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from '../axios';
 
-// Асинхронные действия
-
-// Регистрация нового пациента
 export const registration = createAsyncThunk(
     'patient/registration',
     async (formData, { rejectWithValue }) => {
@@ -15,7 +10,7 @@ export const registration = createAsyncThunk(
                     'Content-Type': 'multipart/form-data',
                 },
             });
-            return response.data; // Ожидаем, что бэкенд вернёт { patient: {...}, token: '...' }
+            return response.data; 
         } catch (err) {
             if (err.response && err.response.data && err.response.data.message) {
                 return rejectWithValue(err.response.data.message);
@@ -26,13 +21,13 @@ export const registration = createAsyncThunk(
     }
 );
 
-// Вход пациента
+
 export const login = createAsyncThunk(
     'patient/login',
     async (credentials, { rejectWithValue }) => {
         try {
             const response = await axios.post('/patients/login', credentials);
-            return response.data; // Ожидаем, что бэкенд вернёт { patient: {...}, token: '...' }
+            return response.data; 
         } catch (err) {
             if (err.response && err.response.data && err.response.data.message) {
                 return rejectWithValue(err.response.data.message);
@@ -43,13 +38,13 @@ export const login = createAsyncThunk(
     }
 );
 
-// Аутентификация пациента
+
 export const auth = createAsyncThunk(
     'patient/auth',
     async (_, { rejectWithValue }) => {
         try {
             const response = await axios.get('/patients/auth');
-            return response.data; // Ожидаем, что бэкенд вернёт { patient: {...} }
+            return response.data; 
         } catch (err) {
             if (err.response && err.response.data && err.response.data.message) {
                 return rejectWithValue(err.response.data.message);
@@ -60,14 +55,14 @@ export const auth = createAsyncThunk(
     }
 );
 
-// Получение всех пациентов
+
 export const fetchAllPatients = createAsyncThunk(
     'patient/fetchAllPatients',
     async (_, { rejectWithValue }) => {
         try {
             const response = await axios.get('/patients');
             return response.data; 
-            // Предположим, что бэкенд возвращает { patients: [...] }
+            
         } catch (err) {
             if (err.response && err.response.data && err.response.data.message) {
                 return rejectWithValue(err.response.data.message);
@@ -78,14 +73,14 @@ export const fetchAllPatients = createAsyncThunk(
     }
 );
 
-// Получение пациента по ID
+
 export const fetchPatientById = createAsyncThunk(
     'patient/fetchPatientById',
     async (patientId, { rejectWithValue }) => {
         try {
             const response = await axios.get(`/patients/${patientId}`);
             return response.data; 
-            // Предположим, что бэкенд возвращает { patient: {...} }
+            
         } catch (err) {
             if (err.response && err.response.data && err.response.data.message) {
                 return rejectWithValue(err.response.data.message);
@@ -96,13 +91,13 @@ export const fetchPatientById = createAsyncThunk(
     }
 );
 
-// Обновление данных пациента
+
 export const updatePatient = createAsyncThunk(
     'patient/updatePatient',
     async ({ id, updatedData }, { rejectWithValue }) => {
         try {
             const formData = new FormData();
-            // Добавляем все поля из updatedData в formData
+            
             Object.keys(updatedData).forEach(key => {
                 formData.append(key, updatedData[key]);
             });
@@ -112,7 +107,7 @@ export const updatePatient = createAsyncThunk(
                     'Content-Type': 'multipart/form-data',
                 },
             });
-            return response.data; // Ожидаем { patient: {...} }
+            return response.data; 
         } catch (err) {
             if (err.response && err.response.data && err.response.data.message) {
                 return rejectWithValue(err.response.data.message);
@@ -123,13 +118,13 @@ export const updatePatient = createAsyncThunk(
     }
 );
 
-// Удаление пациента
+
 export const deletePatient = createAsyncThunk(
     'patient/deletePatient',
     async (patientId, { rejectWithValue }) => {
         try {
             await axios.delete(`/patients/${patientId}`);
-            return patientId; // Возвращаем сам ID, чтобы удалить из стейта
+            return patientId; 
         } catch (err) {
             if (err.response && err.response.data && err.response.data.message) {
                 return rejectWithValue(err.response.data.message);
@@ -140,45 +135,45 @@ export const deletePatient = createAsyncThunk(
     }
 );
 
-// Начальное состояние
+
 const initialState = {
-    patient: null,       // Текущий пациент (для аутентифицированного пользователя)
-    patients: [],        // Список всех пациентов
-    status: 'idle',      // Статус запроса: 'idle' | 'loading' | 'succeeded' | 'failed'
+    patient: null,       
+    patients: [],        
+    status: 'idle',      
     error: null,
 };
 
-// Создание слайса
+
 const patientSlice = createSlice({
     name: 'patient',
     initialState,
     reducers: {
-        // Действие для выхода из системы
+        
         logout: (state) => {
             state.patient = null;
             state.status = 'idle';
             state.error = null;
             localStorage.removeItem('token');
             localStorage.removeItem('role');
-            localStorage.removeItem('patientId'); // <-- Удаляем patientId тоже
+            localStorage.removeItem('patientId'); 
             delete axios.defaults.headers.common['Authorization'];
         },
     },
     extraReducers: (builder) => {
         builder
-            // Регистрация пациента
+            
             .addCase(registration.pending, (state) => {
                 state.status = 'loading';
                 state.error = null;
             })
             .addCase(registration.fulfilled, (state, action) => {
                 state.status = 'succeeded';
-                // action.payload = { patient: {...}, token: '...' }
+                
                 const { patient, token } = action.payload;
                 state.patient = patient;
                 localStorage.setItem('token', token);
                 localStorage.setItem('role', 'patient');
-                localStorage.setItem('patientId', patient.id); // <<--- ВАЖНО!
+                localStorage.setItem('patientId', patient.id); 
                 axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
             })
             .addCase(registration.rejected, (state, action) => {
@@ -186,19 +181,19 @@ const patientSlice = createSlice({
                 state.error = action.payload || action.error.message;
             })
 
-            // Вход (логин) пациента
+            
             .addCase(login.pending, (state) => {
                 state.status = 'loading';
                 state.error = null;
             })
             .addCase(login.fulfilled, (state, action) => {
                 state.status = 'succeeded';
-                // action.payload = { patient: {...}, token: '...' }
+                
                 const { patient, token } = action.payload;
                 state.patient = patient;
                 localStorage.setItem('token', token);
                 localStorage.setItem('role', 'patient');
-                localStorage.setItem('patientId', patient.id); // <<--- ВАЖНО!
+                localStorage.setItem('patientId', patient.id); 
                 axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
             })
             .addCase(login.rejected, (state, action) => {
@@ -206,13 +201,13 @@ const patientSlice = createSlice({
                 state.error = action.payload || action.error.message;
             })
 
-            // Аутентификация пациента
+            
             .addCase(auth.pending, (state) => {
                 state.status = 'loading';
                 state.error = null;
             })
             .addCase(auth.fulfilled, (state, action) => {
-                // action.payload = { patient: {...} }
+                
                 state.status = 'succeeded';
                 state.patient = action.payload.patient;
             })
@@ -222,17 +217,17 @@ const patientSlice = createSlice({
                 state.patient = null;
                 localStorage.removeItem('token');
                 localStorage.removeItem('role');
-                localStorage.removeItem('patientId'); // Удаляем
+                localStorage.removeItem('patientId'); 
                 delete axios.defaults.headers.common['Authorization'];
             })
 
-            // Получение всех пациентов
+            
             .addCase(fetchAllPatients.pending, (state) => {
                 state.status = 'loading';
                 state.error = null;
             })
             .addCase(fetchAllPatients.fulfilled, (state, action) => {
-                // Предположим, что бэкенд вернет: { patients: [...] }
+                
                 state.status = 'succeeded';
                 state.patients = action.payload.patients;
             })
@@ -241,7 +236,7 @@ const patientSlice = createSlice({
                 state.error = action.payload || action.error.message;
             })
 
-            // Получение пациента по ID
+            
             .addCase(fetchPatientById.pending, (state) => {
                 state.status = 'loading';
                 state.error = null;
@@ -261,13 +256,13 @@ const patientSlice = createSlice({
                 state.error = action.payload || action.error.message;
             })
 
-            // Обновление данных пациента
+            
             .addCase(updatePatient.pending, (state) => {
                 state.status = 'loading';
                 state.error = null;
             })
             .addCase(updatePatient.fulfilled, (state, action) => {
-                // action.payload = { patient: {...} }
+                
                 state.status = 'succeeded';
                 state.patient = action.payload.patient;
                 const index = state.patients.findIndex(p => p.id === action.payload.patient.id);
@@ -280,14 +275,14 @@ const patientSlice = createSlice({
                 state.error = action.payload || action.error.message;
             })
 
-            // Удаление пациента
+            
             .addCase(deletePatient.pending, (state) => {
                 state.status = 'loading';
                 state.error = null;
             })
             .addCase(deletePatient.fulfilled, (state, action) => {
                 state.status = 'succeeded';
-                // action.payload = patientId (число)
+                
                 if (state.patient && state.patient.id === action.payload) {
                     state.patient = null;
                     localStorage.removeItem('token');
@@ -304,13 +299,13 @@ const patientSlice = createSlice({
     },
 });
 
-// Селекторы
+
 export const selectIsAuth = (state) => Boolean(state.patient.patient);
 export const selectCurrentPatient = (state) => state.patient.patient;
 export const selectAllPatients = (state) => state.patient.patients;
 export const selectPatientStatus = (state) => state.patient.status;
 export const selectPatientError = (state) => state.patient.error;
 
-// Экспорт действий и редьюсера
+
 export const { logout } = patientSlice.actions;
 export default patientSlice.reducer;

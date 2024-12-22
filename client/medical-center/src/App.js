@@ -1,9 +1,9 @@
 // src/App.js
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { Container } from 'react-bootstrap';
+import { Container, Spinner } from 'react-bootstrap';
 import Header from './components/extra/Header';
 import AuthForm from './components/auth/AuthForm';
 import Home from './components/patient/Home';
@@ -25,19 +25,47 @@ import { auth as patientAuth } from './redux/slices/patientSlice';
 
 function App() {
   const dispatch = useDispatch();
+  const [authChecked, setAuthChecked] = useState(false);
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    const role = localStorage.getItem('role');
+    const checkAuth = async () => {
+      const token = localStorage.getItem('token');
+      const role = localStorage.getItem('role');
 
-    if (token && role === 'admin') {
-      dispatch(adminAuth());
-    } else if (token && role === 'doctor') {
-      dispatch(doctorAuth());
-    } else if (token && role === 'patient') {
-      dispatch(patientAuth());
-    }
+      if (token && role === 'admin') {
+        try {
+          await dispatch(adminAuth()).unwrap();
+        } catch (error) {
+          console.error('Admin auth failed:', error);
+        }
+      } else if (token && role === 'doctor') {
+        try {
+          await dispatch(doctorAuth()).unwrap();
+        } catch (error) {
+          console.error('Doctor auth failed:', error);
+        }
+      } else if (token && role === 'patient') {
+        try {
+          await dispatch(patientAuth()).unwrap();
+        } catch (error) {
+          console.error('Patient auth failed:', error);
+        }
+      }
+      setAuthChecked(true);
+    };
+
+    checkAuth();
   }, [dispatch]);
+
+  if (!authChecked) {
+    return (
+      <Container className="text-center mt-5">
+        <Spinner animation="border" role="status">
+          <span className="visually-hidden">Loading...</span>
+        </Spinner>
+      </Container>
+    );
+  }
 
   return (
     <Router>
@@ -47,9 +75,7 @@ function App() {
         <Route path="/auth" element={<AuthForm />} />
         <Route
           path='/doctors/:id'
-          element={
-            <DoctorDetails></DoctorDetails>
-          }
+          element={<DoctorDetails />}
         />
         <Route
           path="/departments"
@@ -75,13 +101,40 @@ function App() {
             </ProtectedRouteAdmin>
           }
         />
-        <Route path='/admin-users' element={<ProtectedRouteAdmin><AdminDashboard></AdminDashboard></ProtectedRouteAdmin>} />
-        <Route path='/admin-appointments' element={<ProtectedRouteAdmin><AdminAppointments></AdminAppointments></ProtectedRouteAdmin>} />
-        <Route path='/doctor-dashboard' element={<ProtectedRouteDoctor><DoctorDashboard></DoctorDashboard></ProtectedRouteDoctor>} />
-        <Route path='/profile' element={<ProtectedRoutePatient><PatientProfile></PatientProfile></ProtectedRoutePatient>} />
+        <Route 
+          path='/admin-users' 
+          element={
+            <ProtectedRouteAdmin>
+              <AdminDashboard />
+            </ProtectedRouteAdmin>
+          } 
+        />
+        <Route 
+          path='/admin-appointments' 
+          element={
+            <ProtectedRouteAdmin>
+              <AdminAppointments />
+            </ProtectedRouteAdmin>
+          } 
+        />
+        <Route 
+          path='/doctor-dashboard' 
+          element={
+            <ProtectedRouteDoctor>
+              <DoctorDashboard />
+            </ProtectedRouteDoctor>
+          } 
+        />
+        <Route 
+          path='/profile' 
+          element={
+            <ProtectedRoutePatient>
+              <PatientProfile />
+            </ProtectedRoutePatient>
+          } 
+        />
         {/* Другие маршруты */}
       </Routes>
-
       <Footer />
     </Router>
   );

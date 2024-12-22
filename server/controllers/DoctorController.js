@@ -132,7 +132,7 @@ class DoctorController {
                 attributes: { exclude: ['password'] }, 
                 include: {
                     model: Department,
-                    attributes: ['id', 'name'], // Указываем, какие поля хотим получить из Department
+                    attributes: ['id', 'name'], 
                 },
             });
             if (!doctor) {
@@ -145,7 +145,7 @@ class DoctorController {
         }
     }
 
-    // Обновите метод findAll аналогичным образом, если он используется для получения списка врачей
+    
     async findAll(req, res) {
         try {
             const doctors = await Doctor.findAll({

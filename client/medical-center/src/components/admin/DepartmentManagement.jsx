@@ -1,9 +1,9 @@
-// src/components/DepartmentManagement.jsx
+
 
 import React, { useEffect, useState } from 'react';
-import axios from '../../redux/axios'; // Убедитесь, что путь правильный
+import axios from '../../redux/axios'; 
 
-// Импортируем необходимые компоненты из MUI
+
 import {
     TextField,
     Button,
@@ -26,32 +26,32 @@ import {
     Box,
 } from '@mui/material';
 
-// Иконки MUI
+
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 
 function DepartmentManagement() {
-    // Состояние для списка отделений
+    
     const [departments, setDepartments] = useState([]);
-    // Состояния для создания нового отделения
+    
     const [newDeptName, setNewDeptName] = useState('');
-    // Состояния для редактирования отделения
+    
     const [editDeptId, setEditDeptId] = useState(null);
     const [editDeptName, setEditDeptName] = useState('');
-    // Состояние для удаления отделения
+    
     const [deleteDeptId, setDeleteDeptId] = useState(null);
-    // Состояние загрузки
+    
     const [loading, setLoading] = useState(false);
-    // Состояние ошибок
+    
     const [error, setError] = useState('');
-    // Состояние успеха
+    
     const [success, setSuccess] = useState('');
 
-    // Состояния для диалогов
+    
     const [openEditDialog, setOpenEditDialog] = useState(false);
     const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
 
-    // Функция для получения всех отделений
+    
     const fetchDepartments = async () => {
         setLoading(true);
         setError('');
@@ -68,12 +68,12 @@ function DepartmentManagement() {
         }
     };
 
-    // Используем useEffect для получения отделений при монтировании компонента
+    
     useEffect(() => {
         fetchDepartments();
     }, []);
 
-    // Функция для создания нового отделения
+    
     const handleCreateDepartment = async (e) => {
         e.preventDefault();
         setError('');
@@ -101,21 +101,21 @@ function DepartmentManagement() {
         }
     };
 
-    // Функция для открытия диалога редактирования
+    
     const handleOpenEditDialog = (dept) => {
         setEditDeptId(dept.id);
         setEditDeptName(dept.name);
         setOpenEditDialog(true);
     };
 
-    // Функция для закрытия диалога редактирования
+    
     const handleCloseEditDialog = () => {
         setOpenEditDialog(false);
         setEditDeptId(null);
         setEditDeptName('');
     };
 
-    // Функция для обновления отделения
+    
     const handleUpdateDepartment = async () => {
         if (!editDeptName.trim()) {
             setError('Название отдела не может быть пустым');
@@ -140,19 +140,19 @@ function DepartmentManagement() {
         }
     };
 
-    // Функция для открытия диалога удаления
+    
     const handleOpenDeleteDialog = (deptId) => {
         setDeleteDeptId(deptId);
         setOpenDeleteDialog(true);
     };
 
-    // Функция для закрытия диалога удаления
+    
     const handleCloseDeleteDialog = () => {
         setOpenDeleteDialog(false);
         setDeleteDeptId(null);
     };
 
-    // Функция для удаления отделения
+    
     const handleDeleteDepartment = async () => {
         setLoading(true);
         try {

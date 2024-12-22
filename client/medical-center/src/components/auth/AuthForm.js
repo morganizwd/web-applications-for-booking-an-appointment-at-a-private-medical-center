@@ -1,10 +1,8 @@
-// src/components/AuthForm.js
-
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import axios from '../../redux/axios'; // Для запроса /departments
+import axios from '../../redux/axios'; 
 
-// Импортируем необходимые компоненты из MUI
+
 import {
     TextField,
     Select,
@@ -17,7 +15,7 @@ import {
     Box,
 } from '@mui/material';
 
-// Импортируем экшены и селекторы из слайсов
+
 import {
     registration as adminRegistration,
     login as adminLogin,
@@ -42,32 +40,32 @@ import {
 function AuthForm() {
     const dispatch = useDispatch();
 
-    // Локальное состояние для переключения "Вход / Регистрация"
+    
     const [isRegistration, setIsRegistration] = useState(true);
-    // Роль, которую выбрал пользователь
-    const [role, setRole] = useState('admin'); // admin | doctor | patient
+    
+    const [role, setRole] = useState('admin'); 
 
-    // Общие поля для всех
+    
     const [login, setLogin] = useState('');
     const [password, setPassword] = useState('');
 
-    // Дополнительные поля для регистрации
+    
     const [firstName, setFirstName] = useState('');
     const [lastName, setLastName] = useState('');
-    const [specialization, setSpecialization] = useState(''); // для Doctor
-    const [phoneNumber, setPhoneNumber] = useState('');       // для Patient
-    const [address, setAddress] = useState('');               // для Patient
-    const [age, setAge] = useState('');                       // для Patient
+    const [specialization, setSpecialization] = useState(''); 
+    const [phoneNumber, setPhoneNumber] = useState('');       
+    const [address, setAddress] = useState('');               
+    const [age, setAge] = useState('');                       
 
-    // Поле выбора отделения (только для Doctor)
+    
     const [departments, setDepartments] = useState([]);       
     const [selectedDepartment, setSelectedDepartment] = useState('');
 
-    // Фотография для Doctor и Patient
+    
     const [photo, setPhoto] = useState(null);
     const [photoPreview, setPhotoPreview] = useState(null);
 
-    // Селекторы для статуса и ошибок из каждого слайса
+    
     const adminStatus = useSelector(selectAdminStatus);
     const adminError = useSelector(selectAdminError);
 
@@ -77,7 +75,7 @@ function AuthForm() {
     const patientStatus = useSelector(selectPatientStatus);
     const patientError = useSelector(selectPatientError);
 
-    // Унифицированное отображение статуса и ошибок для текущей роли
+    
     let currentStatus, currentError;
     switch (role) {
         case 'admin':
@@ -97,10 +95,10 @@ function AuthForm() {
             currentError = null;
     }
 
-    // При монтировании (или при переключении на роль "doctor") можно загрузить список отделений
+    
     useEffect(() => {
-        // Если вы хотите загружать отделения только при выборе "doctor", 
-        // можно сделать условие if (role === 'doctor'), но иногда проще грузить один раз всегда.
+        
+        
         const fetchDepartments = async () => {
             try {
                 const { data } = await axios.get('/departments'); 
@@ -113,11 +111,11 @@ function AuthForm() {
         fetchDepartments();
     }, []);
 
-    // Обработчик отправки формы
+    
     const handleSubmit = (e) => {
         e.preventDefault();
 
-        // Создаем FormData
+        
         const formData = new FormData();
         formData.append('login', login);
         formData.append('password', password);
@@ -128,7 +126,7 @@ function AuthForm() {
 
             if (role === 'doctor') {
                 formData.append('specialization', specialization);
-                formData.append('departmentId', selectedDepartment); // <-- указываем отделение
+                formData.append('departmentId', selectedDepartment); 
             }
             if (role === 'patient') {
                 formData.append('age', age);
@@ -140,11 +138,11 @@ function AuthForm() {
             }
         }
 
-        // В зависимости от выбранной роли и режима (регистрация / авторизация),
-        // отправляем данные в соответствующий слайс
+        
+        
         if (isRegistration) {
             if (role === 'admin') {
-                // Админ без FormData (пример)
+                
                 dispatch(adminRegistration({ login, password }));
             } else if (role === 'doctor') {
                 dispatch(doctorRegistration(formData));
@@ -152,7 +150,7 @@ function AuthForm() {
                 dispatch(patientRegistration(formData));
             }
         } else {
-            // Авторизация
+            
             if (role === 'admin') {
                 dispatch(adminLogin({ login, password }));
             } else if (role === 'doctor') {
@@ -163,12 +161,12 @@ function AuthForm() {
         }
     };
 
-    // Обработчик изменения файла
+    
     const handlePhotoChange = (e) => {
         const file = e.target.files[0];
         if (file) {
             setPhoto(file);
-            // Создаём превью для выбранного изображения
+            
             const reader = new FileReader();
             reader.onloadend = () => {
                 setPhotoPreview(reader.result);
@@ -177,9 +175,9 @@ function AuthForm() {
         }
     };
 
-    // Условная отрисовка дополнительных полей
+    
     const renderExtraFields = () => {
-        // Если не регистрация — никаких дополнительных полей не показываем
+        
         if (!isRegistration) return null;
 
         return (

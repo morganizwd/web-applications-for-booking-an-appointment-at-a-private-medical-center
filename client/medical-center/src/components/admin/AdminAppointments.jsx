@@ -1,5 +1,3 @@
-// src/components/AdminAppointments.jsx
-
 import React, { useEffect, useState } from 'react';
 import {
   Container,
@@ -10,28 +8,28 @@ import {
   Modal,
   Form,
 } from 'react-bootstrap';
-import axios from '../../redux/axios'; // Ваш настроенный axios
-import { nextDay, formatISO } from 'date-fns'; // Убедитесь, что установили date-fns: npm install date-fns
+import axios from '../../redux/axios'; 
+import { nextDay, formatISO } from 'date-fns'; 
 
 function AdminAppointments() {
   const [appointments, setAppointments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // --- Справочные данные (для выпадающих списков) ---
+  
   const [doctors, setDoctors] = useState([]);
   const [patients, setPatients] = useState([]);
   const [services, setServices] = useState([]);
-  const [schedules, setSchedules] = useState([]); // Расписания всех врачей
+  const [schedules, setSchedules] = useState([]); 
 
-  // Модальные окна: добавление и редактирование
+  
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
 
-  // Данные текущего appointment (для редактирования)
+  
   const [currentAppointment, setCurrentAppointment] = useState(null);
 
-  // Форма для добавления / редактирования
+  
   const [formData, setFormData] = useState({
     doctorId: '',
     patientId: '',
@@ -40,17 +38,17 @@ function AdminAppointments() {
     time: '',
   });
 
-  // Ошибки валидации формы
+  
   const [formErrors, setFormErrors] = useState([]);
 
-  // Расписание выбранного врача
+  
   const [selectedDoctorSchedules, setSelectedDoctorSchedules] = useState([]);
 
-  // Сообщения об успехе и ошибках при добавлении/редактировании
+  
   const [createSuccess, setCreateSuccess] = useState('');
   const [editSuccess, setEditSuccess] = useState('');
 
-  // ------ useEffect: Загрузка начальных данных ------
+  
   useEffect(() => {
     fetchAppointments();
     fetchDoctors();
@@ -59,7 +57,7 @@ function AdminAppointments() {
     fetchSchedules();
   }, []);
 
-  // Получаем список всех приёмов
+  
   const fetchAppointments = async () => {
     try {
       const res = await axios.get('/appointments');
@@ -72,7 +70,7 @@ function AdminAppointments() {
     }
   };
 
-  // Получаем врачей
+  
   const fetchDoctors = async () => {
     try {
       const res = await axios.get('/doctors');
@@ -82,7 +80,7 @@ function AdminAppointments() {
     }
   };
 
-  // Получаем пациентов
+  
   const fetchPatients = async () => {
     try {
       const res = await axios.get('/patients');
@@ -92,7 +90,7 @@ function AdminAppointments() {
     }
   };
 
-  // Получаем услуги
+  
   const fetchServices = async () => {
     try {
       const res = await axios.get('/services');
@@ -102,7 +100,7 @@ function AdminAppointments() {
     }
   };
 
-  // Получаем все расписания
+  
   const fetchSchedules = async () => {
     try {
       const res = await axios.get('/doctor-schedules');
@@ -112,7 +110,7 @@ function AdminAppointments() {
     }
   };
 
-  // ------ Функции открытия/закрытия модалок ------
+  
   const handleShowAddModal = () => {
     setFormData({
       doctorId: '',
@@ -132,11 +130,11 @@ function AdminAppointments() {
     setFormErrors([]);
     setEditSuccess('');
 
-    // Получаем расписание выбранного врача
+    
     const doctorSchedules = schedules.filter(s => s.doctorId === appointment.doctorId);
     setSelectedDoctorSchedules(doctorSchedules);
 
-    // Parse the appointment's date to get dayOfWeek and time
+    
     const date = new Date(appointment.date);
     const dayOfWeek = date.getDay();
     const time = `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}:00`;
@@ -162,12 +160,12 @@ function AdminAppointments() {
     setEditSuccess('');
   };
 
-  // ------ Обработчики изменения формы ------
+  
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
 
-    // Если изменяется врач, обновляем расписание
+    
     if (name === 'doctorId') {
       const doctorId = parseInt(value, 10);
       if (doctorId) {
@@ -188,7 +186,7 @@ function AdminAppointments() {
       }
     }
 
-    // Если изменяется dayOfWeek, сбрасываем время
+    
     if (name === 'dayOfWeek') {
       setFormData(prev => ({
         ...prev,
@@ -197,7 +195,7 @@ function AdminAppointments() {
     }
   };
 
-  // ------ Добавление приёма ------
+  
   const handleAddAppointment = async (e) => {
     e.preventDefault();
     setFormErrors([]);
@@ -205,13 +203,13 @@ function AdminAppointments() {
 
     const { doctorId, patientId, serviceId, dayOfWeek, time } = formData;
 
-    // Валидация на клиенте
+    
     if (!doctorId || !patientId || !serviceId || !dayOfWeek || !time) {
       setFormErrors([{ msg: 'Все поля обязательны для заполнения.' }]);
       return;
     }
 
-    // Проверка, что выбранный день и время соответствуют расписанию врача
+    
     const doctorSchedules = schedules.filter(s => s.doctorId === parseInt(doctorId, 10));
     const matchingSchedule = doctorSchedules.find(s => s.dayOfWeek === parseInt(dayOfWeek, 10)
       && s.startTime <= time
@@ -223,14 +221,14 @@ function AdminAppointments() {
       return;
     }
 
-    // Формирование даты записи
+    
     const appointmentDate = getNextDateByDayOfWeek(parseInt(dayOfWeek, 10), time);
-    const fullDateISO = formatISO(appointmentDate); // "YYYY-MM-DDTHH:mm:ss±HH:MM"
+    const fullDateISO = formatISO(appointmentDate); 
 
-    console.log('Формируемая дата для записи:', fullDateISO); // Для отладки
+    console.log('Формируемая дата для записи:', fullDateISO); 
 
     try {
-      // Проверяем конфликт
+      
       const conflict = await axios.get('/appointments', {
         params: {
           doctorId,
@@ -238,14 +236,14 @@ function AdminAppointments() {
         }
       });
 
-      console.log('Ответ на проверку конфликта:', conflict.data); // Для отладки
+      console.log('Ответ на проверку конфликта:', conflict.data); 
 
       if (conflict.data.length > 0) {
         setFormErrors([{ msg: 'Врач уже занят в выбранное время.' }]);
         return;
       }
 
-      // Создаём приём
+      
       const res = await axios.post('/appointments/create', {
         date: fullDateISO, 
         doctorId: parseInt(doctorId, 10),
@@ -272,7 +270,7 @@ function AdminAppointments() {
     }
   };
 
-  // ------ Редактирование приёма ------
+  
   const handleEditAppointment = async (e) => {
     e.preventDefault();
     setFormErrors([]);
@@ -280,13 +278,13 @@ function AdminAppointments() {
 
     const { doctorId, patientId, serviceId, dayOfWeek, time } = formData;
 
-    // Валидация на клиенте
+    
     if (!doctorId || !patientId || !serviceId || !dayOfWeek || !time) {
       setFormErrors([{ msg: 'Все поля обязательны для заполнения.' }]);
       return;
     }
 
-    // Проверка, что выбранный день и время соответствуют расписанию врача
+    
     const doctorSchedules = schedules.filter(s => s.doctorId === parseInt(doctorId, 10));
     const matchingSchedule = doctorSchedules.find(s => s.dayOfWeek === parseInt(dayOfWeek, 10)
       && s.startTime <= time
@@ -298,14 +296,14 @@ function AdminAppointments() {
       return;
     }
 
-    // Формирование даты записи
+    
     const appointmentDate = getNextDateByDayOfWeek(parseInt(dayOfWeek, 10), time);
-    const fullDateISO = formatISO(appointmentDate); // "YYYY-MM-DDTHH:mm:ss±HH:MM"
+    const fullDateISO = formatISO(appointmentDate); 
 
-    console.log('Формируемая дата для редактирования:', fullDateISO); // Для отладки
+    console.log('Формируемая дата для редактирования:', fullDateISO); 
 
     try {
-      // Проверяем конфликт, исключая текущий приём
+      
       const conflict = await axios.get('/appointments', {
         params: {
           doctorId,
@@ -314,14 +312,14 @@ function AdminAppointments() {
         }
       });
 
-      console.log('Ответ на проверку конфликта при редактировании:', conflict.data); // Для отладки
+      console.log('Ответ на проверку конфликта при редактировании:', conflict.data); 
 
       if (conflict.data.length > 0) {
         setFormErrors([{ msg: 'Врач уже занят в выбранное время.' }]);
         return;
       }
 
-      // Обновляем приём
+      
       const res = await axios.put(`/appointments/${currentAppointment.id}`, {
         date: fullDateISO,
         doctorId: parseInt(doctorId, 10),
@@ -350,7 +348,7 @@ function AdminAppointments() {
     }
   };
 
-  // ------ Удаление приёма ------
+  
   const handleDeleteAppointment = async (id) => {
     if (!window.confirm('Вы действительно хотите удалить приём?')) return;
 
@@ -363,12 +361,12 @@ function AdminAppointments() {
     }
   };
 
-  // ------ Получение расписаний для выбранного врача ------
+  
   const getSchedulesForDoctor = (doctorId) => {
     return schedules.filter(s => s.doctorId === parseInt(doctorId, 10));
   };
 
-  // Функция: получаем ближайшую дату (в пределах 7 дней) для dayOfWeek
+  
   function getNextDateByDayOfWeek(targetDayOfWeek, time) {
     const now = new Date();
     const nextDate = nextDay(now, targetDayOfWeek);
@@ -377,18 +375,18 @@ function AdminAppointments() {
     return nextDate;
   }
 
-  // Преобразование дня недели числа в строку
+  
   const dayNames = [
-    'Воскресенье', // 0
-    'Понедельник', // 1
-    'Вторник',     // 2
-    'Среда',       // 3
-    'Четверг',     // 4
-    'Пятница',     // 5
-    'Суббота',     // 6
+    'Воскресенье', 
+    'Понедельник', 
+    'Вторник',     
+    'Среда',       
+    'Четверг',     
+    'Пятница',     
+    'Суббота',     
   ];
 
-  // Функция для генерации временных слотов
+  
   function generateTimeSlots(startTime, endTime, interval) {
     const slots = [];
     const [startHour, startMinute] = startTime.split(':').map(Number);
@@ -409,7 +407,7 @@ function AdminAppointments() {
     return slots;
   }
 
-  // Функция для форматирования времени
+  
   function formatTime(time) {
     const [hours, minutes] = time.split(':').map(Number);
     const period = hours >= 12 ? 'PM' : 'AM';
@@ -417,7 +415,7 @@ function AdminAppointments() {
     return `${formattedHour}:${String(minutes).padStart(2, '0')} ${period}`;
   }
 
-  // --- Рендер ---
+  
   return (
     <Container className="mt-5">
       <h2>Управление Приёмами</h2>
@@ -580,7 +578,7 @@ function AdminAppointments() {
               >
                 <option value="">-- Выберите время --</option>
                 {formData.dayOfWeek && selectedDoctorSchedules.length > 0 && (
-                  // Получаем все доступные интервалы для выбранного дня
+                  
                   selectedDoctorSchedules
                     .filter(s => s.dayOfWeek === parseInt(formData.dayOfWeek, 10))
                     .map(sch => {
@@ -726,7 +724,7 @@ function AdminAppointments() {
               >
                 <option value="">-- Выберите время --</option>
                 {formData.dayOfWeek && selectedDoctorSchedules.length > 0 && (
-                  // Получаем все доступные интервалы для выбранного дня
+                  
                   selectedDoctorSchedules
                     .filter(s => s.dayOfWeek === parseInt(formData.dayOfWeek, 10))
                     .map(sch => {
@@ -788,7 +786,7 @@ function AdminAppointments() {
   );
 }
 
-// Функция для генерации временных слотов
+
 function generateTimeSlots(startTime, endTime, interval) {
   const slots = [];
   const [startHour, startMinute] = startTime.split(':').map(Number);
@@ -809,7 +807,7 @@ function generateTimeSlots(startTime, endTime, interval) {
   return slots;
 }
 
-// Функция для форматирования времени
+
 function formatTime(time) {
   const [hours, minutes] = time.split(':').map(Number);
   const period = hours >= 12 ? 'PM' : 'AM';

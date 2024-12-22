@@ -1,4 +1,4 @@
-// controllers/AppointmentController.js
+
 
 const { Appointment, Doctor, Patient, Service } = require('../models/models');
 const { validationResult } = require('express-validator');
@@ -11,7 +11,7 @@ class AppointmentController {
                 return res.status(400).json({ errors: errors.array() });
             }
 
-            // Извлекаем ВСЕ поля, включая serviceId:
+            
             const { date, doctorId, patientId, serviceId } = req.body;
 
             const doctor = await Doctor.findByPk(doctorId);
@@ -24,7 +24,7 @@ class AppointmentController {
                 return res.status(404).json({ message: 'Пациент не найден' });
             }
 
-            // Проверяем, что такая услуга существует:
+            
             const service = await Service.findByPk(serviceId);
             if (!service) {
                 return res.status(404).json({ message: 'Услуга не найдена' });

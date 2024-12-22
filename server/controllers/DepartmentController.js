@@ -1,4 +1,4 @@
-const { Department } = require('../models/models'); // Убедитесь, что путь правильный
+const { Department } = require('../models/models'); 
 const { validationResult } = require('express-validator');
 
 class DepartmentController {

@@ -1,4 +1,3 @@
-// routes/appointments.js (или как у вас называется)
 const express = require('express');
 const AppointmentController = require('../controllers/AppointmentController');
 const authenticateToken = require('../middleware/authenticateToken');
@@ -6,7 +5,6 @@ const { body } = require('express-validator');
 
 const router = express.Router();
 
-// Теперь валидируем и serviceId тоже
 router.post(
     '/create',
     authenticateToken,
@@ -17,7 +15,6 @@ router.post(
             .isInt().withMessage('ID врача должен быть числом'),
         body('patientId').notEmpty().withMessage('ID пациента обязателен')
             .isInt().withMessage('ID пациента должен быть числом'),
-        // <-- тоже валидируем serviceId
         body('serviceId').notEmpty().withMessage('ID услуги обязателен')
             .isInt().withMessage('ID услуги должен быть числом'),
     ],

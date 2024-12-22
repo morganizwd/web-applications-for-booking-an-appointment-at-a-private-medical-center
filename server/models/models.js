@@ -1,4 +1,4 @@
-// models/index.js
+
 
 const { Sequelize, DataTypes, Op } = require('sequelize');
 const sequelize = require('../db');
@@ -148,7 +148,7 @@ const Department = sequelize.define('Department', {
     timestamps: true,
 });
 
-// models/index.js
+
 
 const DoctorSchedule = sequelize.define('DoctorSchedule', {
     id: {
@@ -156,7 +156,7 @@ const DoctorSchedule = sequelize.define('DoctorSchedule', {
         primaryKey: true,
         autoIncrement: true,
     },
-    doctorId: { // Добавляем это поле
+    doctorId: { 
         type: DataTypes.INTEGER,
         allowNull: false,
         references: {
@@ -170,8 +170,8 @@ const DoctorSchedule = sequelize.define('DoctorSchedule', {
         type: DataTypes.INTEGER,
         allowNull: false,
         validate: {
-            min: 1, // Понедельник
-            max: 5, // Пятница
+            min: 1, 
+            max: 5, 
         },
     },
     startTime: {
@@ -236,7 +236,7 @@ const Diagnosis = sequelize.define('Diagnosis', {
             len: [0, 500],
         },
     },
-    patientId: { // Добавлено
+    patientId: { 
         type: DataTypes.INTEGER,
         allowNull: false,
         references: {
@@ -246,7 +246,7 @@ const Diagnosis = sequelize.define('Diagnosis', {
         onUpdate: 'CASCADE',
         onDelete: 'CASCADE',
     },
-    doctorId: { // Добавлено
+    doctorId: { 
         type: DataTypes.INTEGER,
         allowNull: false,
         references: {
@@ -326,24 +326,24 @@ Department.hasMany(Doctor, {
 });
 
 Doctor.hasMany(DoctorSchedule, {
-    foreignKey: 'doctorId', // Указываем явное имя внешнего ключа
+    foreignKey: 'doctorId', 
     onDelete: 'CASCADE',
     onUpdate: 'CASCADE',
 });
 DoctorSchedule.belongsTo(Doctor, {
-    foreignKey: 'doctorId', // Указываем явное имя внешнего ключа
+    foreignKey: 'doctorId', 
     onDelete: 'CASCADE',
     onUpdate: 'CASCADE',
 });
 
 Doctor.hasMany(Appointment, {
-    foreignKey: 'doctorId',       // <-- чтобы точно совпадало с тем, что в Appointment описано
+    foreignKey: 'doctorId',      
     onDelete: 'CASCADE',
     onUpdate: 'CASCADE',
 });
 
 Appointment.belongsTo(Doctor, {
-    foreignKey: 'doctorId',       // <-- явное указание
+    foreignKey: 'doctorId',       
     onDelete: 'CASCADE',
     onUpdate: 'CASCADE',
 });

@@ -1,5 +1,3 @@
-// src/components/admin/AdminDashboard.jsx
-
 import React, { useEffect, useState } from 'react';
 import {
     Container,
@@ -11,7 +9,7 @@ import {
     Table,
     Modal,
 } from 'react-bootstrap';
-import axios from '../../redux/axios'; // Ваш настроенный экземпляр axios
+import axios from '../../redux/axios'; 
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
 
@@ -25,7 +23,7 @@ function AdminDashboard() {
     const [doctorsError, setDoctorsError] = useState('');
     const [patientsError, setPatientsError] = useState('');
 
-    // Фетчинг данных при загрузке компонента
+    
     useEffect(() => {
         fetchDoctors();
         fetchPatients();
@@ -55,7 +53,7 @@ function AdminDashboard() {
         }
     };
 
-    // Функции экспорта в Excel
+    
     const exportToExcel = (data, headers, filename) => {
         const worksheet = XLSX.utils.json_to_sheet(data, { header: headers });
         const workbook = XLSX.utils.book_new();
@@ -65,10 +63,10 @@ function AdminDashboard() {
         saveAs(dataBlob, `${filename}.xlsx`);
     };
 
-    // Функции экспорта в Word (HTML-метод)
+    
     const exportToWord = (data, headers, filename) => {
         try {
-            // Создаём HTML-таблицу
+            
             let tableHTML = `
                 <table border="1" style="border-collapse: collapse; width: 100%;">
                     <thead>
@@ -92,7 +90,7 @@ function AdminDashboard() {
                 </table>
             `;
 
-            // Оборачиваем таблицу в базовый HTML
+            
             const htmlContent = `
                 <html>
                     <head>
@@ -106,7 +104,7 @@ function AdminDashboard() {
                 </html>
             `;
 
-            // Создаём Blob с типом "application/msword"
+            
             const blob = new Blob([htmlContent], {
                 type: 'application/msword;charset=utf-8',
             });

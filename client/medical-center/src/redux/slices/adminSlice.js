@@ -1,11 +1,7 @@
-// src/redux/slices/adminSlice.js
-
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from '../axios';
 
-// Асинхронные действия
 
-// Регистрация нового администратора
 export const registration = createAsyncThunk(
     'admin/registration',
     async (adminData, { rejectWithValue }) => {
@@ -22,7 +18,7 @@ export const registration = createAsyncThunk(
     }
 );
 
-// Вход администратора
+
 export const login = createAsyncThunk(
     'admin/login',
     async (credentials, { rejectWithValue }) => {
@@ -39,7 +35,7 @@ export const login = createAsyncThunk(
     }
 );
 
-// Аутентификация текущего администратора
+
 export const auth = createAsyncThunk(
     'admin/auth',
     async (_, { rejectWithValue }) => {
@@ -56,7 +52,7 @@ export const auth = createAsyncThunk(
     }
 );
 
-// Получение всех администраторов
+
 export const fetchAllAdmins = createAsyncThunk(
     'admin/fetchAllAdmins',
     async (_, { rejectWithValue }) => {
@@ -73,7 +69,7 @@ export const fetchAllAdmins = createAsyncThunk(
     }
 );
 
-// Получение администратора по ID
+
 export const fetchAdminById = createAsyncThunk(
     'admin/fetchAdminById',
     async (adminId, { rejectWithValue }) => {
@@ -90,7 +86,7 @@ export const fetchAdminById = createAsyncThunk(
     }
 );
 
-// Обновление данных администратора
+
 export const updateAdmin = createAsyncThunk(
     'admin/updateAdmin',
     async ({ id, updatedData }, { rejectWithValue }) => {
@@ -107,7 +103,7 @@ export const updateAdmin = createAsyncThunk(
     }
 );
 
-// Удаление администратора
+
 export const deleteAdmin = createAsyncThunk(
     'admin/deleteAdmin',
     async (adminId, { rejectWithValue }) => {
@@ -124,31 +120,31 @@ export const deleteAdmin = createAsyncThunk(
     }
 );
 
-// Начальное состояние
+
 const initialState = {
-    admin: null,        // Текущий администратор (для аутентифицированного пользователя)
-    admins: [],         // Список всех администраторов
-    status: 'idle',     // Статус запроса: 'idle' | 'loading' | 'succeeded' | 'failed'
+    admin: null,        
+    admins: [],         
+    status: 'idle',     
     error: null,
 };
 
-// Создание слайса
+
 const adminSlice = createSlice({
     name: 'admin',
     initialState,
     reducers: {
-        // Действие для выхода из системы
+        
         logout: (state) => {
             state.admin = null;
             state.status = 'idle';
             localStorage.removeItem('token');
-            localStorage.removeItem('role'); // Удаляем роль
+            localStorage.removeItem('role'); 
             delete axios.defaults.headers.common['Authorization'];
         },
     },
     extraReducers: (builder) => {
         builder
-            // Регистрация администратора
+            
             .addCase(registration.pending, (state) => {
                 state.status = 'loading';
                 state.error = null;
@@ -157,7 +153,7 @@ const adminSlice = createSlice({
                 state.status = 'succeeded';
                 state.admin = action.payload.admin;
                 localStorage.setItem('token', action.payload.token);
-                localStorage.setItem('role', action.payload.admin.role); // Сохраняем роль
+                localStorage.setItem('role', action.payload.admin.role); 
                 axios.defaults.headers.common['Authorization'] = `Bearer ${action.payload.token}`;
             })
             .addCase(registration.rejected, (state, action) => {
@@ -165,16 +161,16 @@ const adminSlice = createSlice({
                 state.error = action.payload || action.error.message;
             })
 
-            // Вход администратора
+            
             .addCase(login.pending, (state) => {
                 state.status = 'loading';
                 state.error = null;
             })
             .addCase(login.fulfilled, (state, action) => {
                 state.status = 'succeeded';
-                state.admin = action.payload.admin; // admin: {id, login, role: 'admin'}
+                state.admin = action.payload.admin; 
                 localStorage.setItem('token', action.payload.token);
-                localStorage.setItem('role', action.payload.admin.role); // Сохраняем роль
+                localStorage.setItem('role', action.payload.admin.role); 
                 axios.defaults.headers.common['Authorization'] = `Bearer ${action.payload.token}`;
             })
             .addCase(login.rejected, (state, action) => {
@@ -182,15 +178,15 @@ const adminSlice = createSlice({
                 state.error = action.payload || action.error.message;
             })
 
-            // Аутентификация администратора
+            
             .addCase(auth.pending, (state) => {
                 state.status = 'loading';
                 state.isAuthChecked = false;
-                // ...
+                
             })
             .addCase(auth.fulfilled, (state, action) => {
                 state.status = 'succeeded';
-                state.isAuthChecked = true; // запрос точно завершился
+                state.isAuthChecked = true; 
                 state.admin = action.payload.admin;
             })
             .addCase(auth.rejected, (state, action) => {
@@ -199,7 +195,7 @@ const adminSlice = createSlice({
                 state.error = action.payload || action.error.message;
             })
 
-            // Получение всех администраторов
+            
             .addCase(fetchAllAdmins.pending, (state) => {
                 state.status = 'loading';
                 state.error = null;
@@ -213,7 +209,7 @@ const adminSlice = createSlice({
                 state.error = action.payload || action.error.message;
             })
 
-            // Получение администратора по ID
+            
             .addCase(fetchAdminById.pending, (state) => {
                 state.status = 'loading';
                 state.error = null;
@@ -233,7 +229,7 @@ const adminSlice = createSlice({
                 state.error = action.payload || action.error.message;
             })
 
-            // Обновление данных администратора
+            
             .addCase(updateAdmin.pending, (state) => {
                 state.status = 'loading';
                 state.error = null;
@@ -241,7 +237,7 @@ const adminSlice = createSlice({
             .addCase(updateAdmin.fulfilled, (state, action) => {
                 state.status = 'succeeded';
                 state.admin = action.payload.admin;
-                // Обновляем администратора в списке, если он там есть
+                
                 const index = state.admins.findIndex(a => a.id === action.payload.admin.id);
                 if (index !== -1) {
                     state.admins[index] = action.payload.admin;
@@ -252,20 +248,20 @@ const adminSlice = createSlice({
                 state.error = action.payload || action.error.message;
             })
 
-            // Удаление администратора
+            
             .addCase(deleteAdmin.pending, (state) => {
                 state.status = 'loading';
                 state.error = null;
             })
             .addCase(deleteAdmin.fulfilled, (state, action) => {
                 state.status = 'succeeded';
-                // Если удаляем текущего администратора
+                
                 if (state.admin && state.admin.id === action.payload) {
                     state.admin = null;
                     localStorage.removeItem('token');
                     delete axios.defaults.headers.common['Authorization'];
                 }
-                // Удаляем администратора из списка
+                
                 state.admins = state.admins.filter(a => a.id !== action.payload);
             })
             .addCase(deleteAdmin.rejected, (state, action) => {
@@ -275,13 +271,13 @@ const adminSlice = createSlice({
     },
 });
 
-// Селекторы
+
 export const selectIsAuth = (state) => Boolean(state.admin.admin);
 export const selectCurrentAdmin = (state) => state.admin.admin;
 export const selectAllAdmins = (state) => state.admin.admins;
 export const selectAdminStatus = (state) => state.admin.status;
 export const selectAdminError = (state) => state.admin.error;
 
-// Экспорт действий и редьюсера
+
 export const { logout } = adminSlice.actions;
 export default adminSlice.reducer;

@@ -11,7 +11,7 @@ class DoctorScheduleController {
 
             const { doctorId, dayOfWeek, startTime, endTime } = req.body;
 
-            // Проверка, что день недели является рабочим (1-5)
+            
             if (dayOfWeek < 1 || dayOfWeek > 5) {
                 return res.status(400).json({ message: 'День недели должен быть с 1 (Понедельник) по 5 (Пятница)' });
             }
@@ -70,7 +70,7 @@ class DoctorScheduleController {
             }
 
             if (dayOfWeek !== undefined) {
-                // Проверка, что день недели является рабочим (1-5)
+                
                 if (dayOfWeek < 1 || dayOfWeek > 5) {
                     return res.status(400).json({ message: 'День недели должен быть с 1 (Понедельник) по 5 (Пятница)' });
                 }

@@ -1,8 +1,6 @@
-// src/components/Home.jsx
-
 import React, { useEffect, useState } from 'react';
 import { Container, Row, Col, Card, Spinner, Alert, Carousel, Button } from 'react-bootstrap';
-import axios from '../../redux/axios'; // Убедитесь, что axios настроен правильно
+import axios from '../../redux/axios'; 
 
 function Home() {
     const [departments, setDepartments] = useState([]);
@@ -202,7 +200,7 @@ function Home() {
                             <li>Доступные цены</li>
                             <li>Дружелюбный персонал</li>
                         </ul>
-                        <Button variant="success" href="/about">Узнать больше</Button>
+                        <Button variant="success" href="/about">Кнопка прикол</Button>
                     </Col>
                     <Col md={6}>
                         <img
