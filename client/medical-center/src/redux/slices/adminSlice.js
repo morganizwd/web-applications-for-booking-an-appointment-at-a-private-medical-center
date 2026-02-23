@@ -6,7 +6,10 @@ export const registration = createAsyncThunk(
     'admin/registration',
     async (adminData, { rejectWithValue }) => {
         try {
-            const response = await axios.post('/admins/registration', adminData);
+            const response = await axios.post('/auth/register', {
+                ...adminData,
+                role: 'admin'
+            });
             return response.data;
         } catch (err) {
             if (err.response && err.response.data && err.response.data.message) {
@@ -23,7 +26,7 @@ export const login = createAsyncThunk(
     'admin/login',
     async (credentials, { rejectWithValue }) => {
         try {
-            const response = await axios.post('/admins/login', credentials);
+            const response = await axios.post('/auth/login', credentials);
             return response.data;
         } catch (err) {
             if (err.response && err.response.data && err.response.data.message) {
@@ -40,7 +43,7 @@ export const auth = createAsyncThunk(
     'admin/auth',
     async (_, { rejectWithValue }) => {
         try {
-            const response = await axios.get('/admins/auth');
+            const response = await axios.get('/auth/auth');
             return response.data;
         } catch (err) {
             if (err.response && err.response.data && err.response.data.message) {
@@ -152,9 +155,15 @@ const adminSlice = createSlice({
             .addCase(registration.fulfilled, (state, action) => {
                 console.log('Registration success payload:', action.payload); 
                 state.status = 'succeeded';
-                state.admin = action.payload;  
+                // Для admin нет profile при регистрации
+                state.admin = { 
+                    id: action.payload.user.id,
+                    login: action.payload.user.login,
+                    email: action.payload.user.email,
+                    role: action.payload.user.role || 'admin' 
+                };  
                 localStorage.setItem('token', action.payload.token);
-                localStorage.setItem('role', action.payload.role); 
+                localStorage.setItem('role', action.payload.user.role || 'admin'); 
                 axios.defaults.headers.common['Authorization'] = `Bearer ${action.payload.token}`;
             })
             .addCase(registration.rejected, (state, action) => {
@@ -169,10 +178,19 @@ const adminSlice = createSlice({
             })
             .addCase(login.fulfilled, (state, action) => {
                 state.status = 'succeeded';
-                state.admin = action.payload.admin; 
+                // Для admin нет profile, используем сам user объект
+                const userData = action.payload.user.profile || action.payload.user;
+                state.admin = { 
+                    ...userData, 
+                    id: action.payload.user.id,
+                    login: action.payload.user.login,
+                    email: action.payload.user.email,
+                    role: action.payload.user.primaryRole || 'admin' 
+                }; 
                 localStorage.setItem('token', action.payload.token);
-                localStorage.setItem('role', action.payload.admin.role); 
+                localStorage.setItem('role', action.payload.user.primaryRole || 'admin'); 
                 axios.defaults.headers.common['Authorization'] = `Bearer ${action.payload.token}`;
+                console.log('Admin login fulfilled, admin data:', state.admin);
             })
             .addCase(login.rejected, (state, action) => {
                 state.status = 'failed';
@@ -188,7 +206,15 @@ const adminSlice = createSlice({
             .addCase(auth.fulfilled, (state, action) => {
                 state.status = 'succeeded';
                 state.isAuthChecked = true; 
-                state.admin = action.payload.admin;
+                // Для admin нет profile
+                const userData = action.payload.profile || action.payload;
+                state.admin = { 
+                    ...userData,
+                    id: action.payload.id,
+                    login: action.payload.login,
+                    email: action.payload.email,
+                    role: action.payload.primaryRole || 'admin' 
+                };
             })
             .addCase(auth.rejected, (state, action) => {
                 state.status = 'failed';
@@ -273,7 +299,11 @@ const adminSlice = createSlice({
 });
 
 
-export const selectIsAuth = (state) => Boolean(state.admin.admin);
+export const selectIsAuth = (state) => {
+    const token = localStorage.getItem('token');
+    const role = localStorage.getItem('role');
+    return Boolean(state.admin.admin && token && role === 'admin');
+};
 export const selectCurrentAdmin = (state) => state.admin.admin;
 export const selectAllAdmins = (state) => state.admin.admins;
 export const selectAdminStatus = (state) => state.admin.status;

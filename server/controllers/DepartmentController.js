@@ -1,5 +1,7 @@
 const { Department } = require('../models/models'); 
 const { validationResult } = require('express-validator');
+const fs = require('fs');
+const path = require('path');
 
 class DepartmentController {
     async create(req, res) {
@@ -16,11 +18,26 @@ class DepartmentController {
                 return res.status(400).json({ message: 'Отдел с таким названием уже существует' });
             }
 
-            const department = await Department.create({ name });
+            let photoPath = null;
+            if (req.file) {
+                const uploadDir = path.join(__dirname, '../uploads/departments');
+                if (!fs.existsSync(uploadDir)) {
+                    fs.mkdirSync(uploadDir, { recursive: true });
+                }
+                const filename = `${Date.now()}_${req.file.originalname}`;
+                photoPath = `/uploads/departments/${filename}`;
+                fs.writeFileSync(path.join(uploadDir, filename), req.file.buffer);
+            }
+
+            const department = await Department.create({ 
+                name,
+                photo: photoPath,
+            });
 
             res.status(201).json({
                 id: department.id,
                 name: department.name,
+                photo: department.photo,
                 createdAt: department.createdAt,
                 updatedAt: department.updatedAt,
             });
@@ -75,11 +92,35 @@ class DepartmentController {
                 }
             }
 
-            await department.update({ name: name || department.name });
+            // Обработка загрузки новой фотографии
+            let photoPath = department.photo;
+            if (req.file) {
+                // Удаляем старое фото, если оно существует
+                if (department.photo) {
+                    const oldPhotoPath = path.join(__dirname, '..', department.photo);
+                    if (fs.existsSync(oldPhotoPath)) {
+                        fs.unlinkSync(oldPhotoPath);
+                    }
+                }
+
+                const uploadDir = path.join(__dirname, '../uploads/departments');
+                if (!fs.existsSync(uploadDir)) {
+                    fs.mkdirSync(uploadDir, { recursive: true });
+                }
+                const filename = `${Date.now()}_${req.file.originalname}`;
+                photoPath = `/uploads/departments/${filename}`;
+                fs.writeFileSync(path.join(uploadDir, filename), req.file.buffer);
+            }
+
+            await department.update({ 
+                name: name || department.name,
+                photo: photoPath,
+            });
 
             res.json({
                 id: department.id,
                 name: department.name,
+                photo: department.photo,
                 createdAt: department.createdAt,
                 updatedAt: department.updatedAt,
             });

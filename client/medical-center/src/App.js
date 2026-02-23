@@ -3,7 +3,10 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { ThemeProvider } from 'styled-components';
 import { Container, Spinner } from 'react-bootstrap';
+import { GlobalStyles } from './styles/GlobalStyles';
+import { theme } from './styles/theme';
 import Header from './components/extra/Header';
 import AuthForm from './components/auth/AuthForm';
 import Home from './components/patient/Home';
@@ -18,7 +21,9 @@ import DoctorDetails from './components/patient/DoctorDetails';
 import AdminDoctorSchedule from './components/admin/AdminDoctorSchedule';
 import DoctorDashboard from './components/doc/DoctorDashboard';
 import AdminAppointments from './components/admin/AdminAppointments';
-import AdminDashboard from './components/admin/UsersList'; 
+import AdminDashboard from './components/admin/UsersList';
+import Consultant from './components/rag/Consultant';
+import KnowledgeDocumentsManagement from './components/admin/KnowledgeDocumentsManagement';
 import { auth as adminAuth } from './redux/slices/adminSlice';
 import { auth as doctorAuth } from './redux/slices/doctorSlice';
 import { auth as patientAuth } from './redux/slices/patientSlice';
@@ -68,9 +73,11 @@ function App() {
   }
 
   return (
-    <Router>
-      <Header />
-      <Routes>
+    <ThemeProvider theme={theme}>
+      <GlobalStyles />
+      <Router>
+        <Header />
+        <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/auth" element={<AuthForm />} />
         <Route
@@ -118,6 +125,14 @@ function App() {
           } 
         />
         <Route 
+          path='/admin-knowledge' 
+          element={
+            <ProtectedRouteAdmin>
+              <KnowledgeDocumentsManagement />
+            </ProtectedRouteAdmin>
+          } 
+        />
+        <Route 
           path='/doctor-dashboard' 
           element={
             <ProtectedRouteDoctor>
@@ -133,10 +148,15 @@ function App() {
             </ProtectedRoutePatient>
           } 
         />
+        <Route 
+          path='/consultant' 
+          element={<Consultant />} 
+        />
         {/* Другие маршруты */}
-      </Routes>
-      <Footer />
-    </Router>
+        </Routes>
+        <Footer />
+      </Router>
+    </ThemeProvider>
   );
 }
 

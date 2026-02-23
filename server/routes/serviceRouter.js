@@ -22,7 +22,8 @@ router.post(
 
 router.get('/:id', authenticateToken, ServiceController.findOne);
 
-router.get('/', authenticateToken, ServiceController.findAll);
+// Публичный доступ к списку услуг (для главной страницы)
+router.get('/', ServiceController.findAll);
 
 router.put(
     '/:id',

@@ -1,8 +1,15 @@
 import React from 'react';
-import { Navbar, Nav, NavDropdown, Button, Container } from 'react-bootstrap';
+import { Navbar, Nav, NavDropdown } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
-
+import {
+    StyledNavbar,
+    StyledNav,
+    StyledNavDropdown,
+    StyledLogoutButton,
+    StyledContainer,
+    StyledNavLink,
+} from './Header.styled';
 
 import {
     logout as adminLogout,
@@ -22,15 +29,9 @@ import {
 function Header() {
     const dispatch = useDispatch();
 
-
     const isAdminAuth = useSelector(selectIsAuthAdmin);
     const isDoctorAuth = useSelector(selectIsAuthDoctor);
     const isPatientAuth = useSelector(selectIsAuthPatient);
-
-    console.log('Header isAdminAuth:', isAdminAuth);
-    console.log('Header isDoctorAuth:', isDoctorAuth);
-    console.log('Header isPatientAuth:', isPatientAuth);
-
 
     const isAuth = isAdminAuth || isDoctorAuth || isPatientAuth;
 
@@ -47,14 +48,14 @@ function Header() {
     };
 
     return (
-        <Navbar bg="light" expand="lg">
-            <Container>
+        <StyledNavbar expand="lg">
+            <StyledContainer>
                 <Navbar.Brand as={Link} to="/">
                     WebClinic'a
                 </Navbar.Brand>
                 <Navbar.Toggle aria-controls="header-navbar-nav" />
                 <Navbar.Collapse id="header-navbar-nav">
-                    <Nav className="ms-auto">
+                    <StyledNav className="ms-auto">
                         {!isAuth && (
                             <Nav.Link as={Link} to="/auth">
                                 Авторизация
@@ -65,7 +66,7 @@ function Header() {
                             <>
                                 {/* Admin Dropdown */}
                                 {isAdminAuth && (
-                                    <NavDropdown title="Админ" id="admin-nav-dropdown">
+                                    <StyledNavDropdown title="Админ" id="admin-nav-dropdown">
                                         <NavDropdown.Item as={Link} to="/departments">
                                             Управление Отделениями
                                         </NavDropdown.Item>
@@ -81,7 +82,10 @@ function Header() {
                                         <NavDropdown.Item as={Link} to="/admin-users">
                                             Пользователи
                                         </NavDropdown.Item>
-                                    </NavDropdown>
+                                        <NavDropdown.Item as={Link} to="/admin-knowledge">
+                                            База знаний
+                                        </NavDropdown.Item>
+                                    </StyledNavDropdown>
                                 )}
 
                                 {/* Doctor Link */}
@@ -103,16 +107,23 @@ function Header() {
                                     </>
                                 )}
 
+                                {/* RAG Consultant - доступен всем авторизованным */}
+                                {isAuth && (
+                                    <Nav.Link as={Link} to="/consultant">
+                                        Консультант
+                                    </Nav.Link>
+                                )}
+
                                 {/* Logout Button */}
-                                <Button variant="outline-danger" onClick={handleLogout} className="ms-2">
+                                <StyledLogoutButton onClick={handleLogout}>
                                     Выйти
-                                </Button>
+                                </StyledLogoutButton>
                             </>
                         )}
-                    </Nav>
+                    </StyledNav>
                 </Navbar.Collapse>
-            </Container>
-        </Navbar>
+            </StyledContainer>
+        </StyledNavbar>
     );
 }
 

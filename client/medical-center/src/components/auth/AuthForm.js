@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
 import axios from '../../redux/axios'; 
 
 import {
@@ -37,6 +38,7 @@ import {
 
 function AuthForm() {
     const dispatch = useDispatch();
+    const navigate = useNavigate();
 
     const [isRegistration, setIsRegistration] = useState(true);
     const [role, setRole] = useState('admin'); 
@@ -125,6 +127,41 @@ function AuthForm() {
             return () => clearTimeout(timer); 
         }
     }, [currentStatus, isRegistration]);
+
+    // Перенаправление после успешного логина
+    useEffect(() => {
+        if (!isRegistration && currentStatus === 'succeeded' && !currentError) {
+            // Проверяем, что токен сохранён
+            const token = localStorage.getItem('token');
+            const savedRole = localStorage.getItem('role');
+            
+            console.log('Login successful, token:', token, 'role:', savedRole);
+            
+            if (token && savedRole) {
+                // Небольшая задержка для сохранения данных в Redux и обновления компонентов
+                const timer = setTimeout(() => {
+                    console.log('Navigating to dashboard for role:', savedRole);
+                    switch (savedRole) {
+                        case 'admin':
+                            navigate('/admin-users', { replace: true });
+                            break;
+                        case 'doctor':
+                            navigate('/doctor-dashboard', { replace: true });
+                            break;
+                        case 'patient':
+                            navigate('/profile', { replace: true });
+                            break;
+                        default:
+                            navigate('/', { replace: true });
+                    }
+                }, 300);
+
+                return () => clearTimeout(timer);
+            } else {
+                console.warn('Token or role not found after login');
+            }
+        }
+    }, [currentStatus, isRegistration, currentError, navigate]);
 
     const handleSubmit = (e) => {
         e.preventDefault();

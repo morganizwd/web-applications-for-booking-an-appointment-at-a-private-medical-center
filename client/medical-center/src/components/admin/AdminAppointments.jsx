@@ -47,6 +47,7 @@ function AdminAppointments() {
   
   const [createSuccess, setCreateSuccess] = useState('');
   const [editSuccess, setEditSuccess] = useState('');
+  const [exportLoading, setExportLoading] = useState(false);
 
   
   useEffect(() => {
@@ -361,6 +362,56 @@ function AdminAppointments() {
     }
   };
 
+  // Экспорт в Excel
+  const handleExportExcel = async () => {
+    setExportLoading(true);
+    try {
+      const response = await axios.get('/reports/export-appointments', {
+        params: { format: 'excel' },
+        responseType: 'blob',
+      });
+
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `appointments_${new Date().toISOString().split('T')[0]}.xlsx`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error('Ошибка экспорта в Excel:', err);
+      setError('Не удалось экспортировать данные в Excel.');
+    } finally {
+      setExportLoading(false);
+    }
+  };
+
+  // Экспорт в Word
+  const handleExportWord = async () => {
+    setExportLoading(true);
+    try {
+      const response = await axios.get('/reports/export-appointments', {
+        params: { format: 'word' },
+        responseType: 'blob',
+      });
+
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `appointments_${new Date().toISOString().split('T')[0]}.docx`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error('Ошибка экспорта в Word:', err);
+      setError('Не удалось экспортировать данные в Word.');
+    } finally {
+      setExportLoading(false);
+    }
+  };
+
   
   const getSchedulesForDoctor = (doctorId) => {
     return schedules.filter(s => s.doctorId === parseInt(doctorId, 10));
@@ -430,10 +481,41 @@ function AdminAppointments() {
         <Alert variant="danger">{error}</Alert>
       ) : (
         <>
-          <div className="mb-3">
+          <div className="mb-3 d-flex justify-content-between align-items-center">
             <Button variant="primary" onClick={handleShowAddModal}>
               Добавить Приём
             </Button>
+            <div>
+              <Button 
+                variant="success" 
+                className="me-2"
+                onClick={handleExportExcel}
+                disabled={appointments.length === 0 || exportLoading}
+              >
+                {exportLoading ? (
+                  <>
+                    <Spinner animation="border" size="sm" className="me-2" />
+                    Экспорт...
+                  </>
+                ) : (
+                  '📊 Экспорт в Excel'
+                )}
+              </Button>
+              <Button 
+                variant="info" 
+                onClick={handleExportWord}
+                disabled={appointments.length === 0 || exportLoading}
+              >
+                {exportLoading ? (
+                  <>
+                    <Spinner animation="border" size="sm" className="me-2" />
+                    Экспорт...
+                  </>
+                ) : (
+                  '📄 Экспорт в Word'
+                )}
+              </Button>
+            </div>
           </div>
 
           <Table bordered hover>

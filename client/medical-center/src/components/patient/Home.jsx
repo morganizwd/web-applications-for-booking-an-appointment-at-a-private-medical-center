@@ -1,6 +1,42 @@
 import React, { useEffect, useState } from 'react';
-import { Container, Row, Col, Card, Spinner, Alert, Carousel, Button } from 'react-bootstrap';
-import axios from '../../redux/axios'; 
+import { Row, Col, Spinner, Alert, Carousel } from 'react-bootstrap';
+import { Link } from 'react-router-dom';
+import axios from '../../redux/axios';
+import {
+    StyledContainer,
+    LoadingContainer,
+    StyledCarousel,
+    SectionContainer,
+    SectionTitle,
+    StyledRow,
+    StyledCol,
+    DepartmentCard,
+    ServiceCard,
+    DoctorCard,
+    StyledButton,
+    SuccessButton,
+    StyledAlert,
+    InfoSection,
+    InfoContent,
+    InfoImage,
+    PriceTag,
+    ShowMoreButtonContainer,
+    ShowMoreButton,
+} from './Home.styled'; 
+
+// Массив стоковых изображений для отделений (Unsplash)
+const departmentImages = [
+    'https://images.unsplash.com/photo-1576091160399-112ba8d25d1f?w=800&q=80', // Кардиология
+    'https://images.unsplash.com/photo-1559757148-5c350d0d3c56?w=800&q=80', // Неврология
+    'https://images.unsplash.com/photo-1582719471384-894fbb16e074?w=800&q=80', // Терапия
+    'https://images.unsplash.com/photo-1551601651-2a8555f1a136?w=800&q=80', // Хирургия
+    'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=800&q=80', // Педиатрия
+    'https://images.unsplash.com/photo-1559757175-0eb30cd8c063?w=800&q=80', // Гинекология
+    'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=800&q=80', // Офтальмология
+    'https://images.unsplash.com/photo-1551601651-2a8555f1a136?w=800&q=80', // Стоматология
+    'https://images.unsplash.com/photo-1576091160399-112ba8d25d1f?w=800&q=80', // Дерматология
+    'https://images.unsplash.com/photo-1559757148-5c350d0d3c56?w=800&q=80', // Ортопедия
+];
 
 function Home() {
     const [departments, setDepartments] = useState([]);
@@ -8,6 +44,13 @@ function Home() {
     const [doctors, setDoctors] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    
+    // Состояния для управления отображением карточек
+    const [showAllDepartments, setShowAllDepartments] = useState(false);
+    const [showAllServices, setShowAllServices] = useState(false);
+    const [showAllDoctors, setShowAllDoctors] = useState(false);
+    
+    const ITEMS_TO_SHOW = 6;
 
     useEffect(() => {
         const fetchData = async () => {
@@ -34,32 +77,31 @@ function Home() {
 
     if (loading) {
         return (
-            <Container className="text-center mt-5">
-                <Spinner animation="border" role="status">
+            <LoadingContainer>
+                <Spinner animation="border" role="status" style={{ width: '3rem', height: '3rem' }}>
                     <span className="visually-hidden">Загрузка...</span>
                 </Spinner>
-            </Container>
+            </LoadingContainer>
         );
     }
 
     if (error) {
         return (
-            <Container className="mt-5">
-                <Alert variant="danger">{error}</Alert>
-            </Container>
+            <StyledContainer>
+                <StyledAlert variant="danger">{error}</StyledAlert>
+            </StyledContainer>
         );
     }
 
     return (
         <div>
             {/* Hero Section */}
-            <Carousel>
+            <StyledCarousel>
                 <Carousel.Item>
                     <img
                         className="d-block w-100"
                         src="/images/louis-reed-pwcKF7L4-no-unsplash.jpg"
-                        alt="Первый слайд"
-                        style={{ objectFit: 'fill', height: '400px', width: '400px' }}
+                        alt="Добро пожаловать в Нашу Медицинскую Клинику"
                     />
                     <Carousel.Caption>
                         <h3>Добро пожаловать в Нашу Медицинскую Клинику</h3>
@@ -70,10 +112,8 @@ function Home() {
                     <img
                         className="d-block w-100"
                         src="/images/piron-guillaume-U4FyCp3-KzY-unsplash.jpg"
-                        alt="Второй слайд"
-                        style={{ objectFit: 'cover', height: '400px' }}
+                        alt="Профессиональные Врачи"
                     />
-
                     <Carousel.Caption>
                         <h3>Профессиональные Врачи</h3>
                         <p>Наши специалисты всегда готовы помочь вам.</p>
@@ -83,135 +123,170 @@ function Home() {
                     <img
                         className="d-block w-100"
                         src="/images/lucas-vasques-9vnACvX2748-unsplash.jpg"
-                        alt="Третий слайд"
-                        style={{ objectFit: 'cover', height: '400px' }}
+                        alt="Современное Оборудование"
                     />
-
                     <Carousel.Caption>
                         <h3>Современное Оборудование</h3>
                         <p>Мы используем только самое передовое оборудование.</p>
                     </Carousel.Caption>
                 </Carousel.Item>
-            </Carousel>
+            </StyledCarousel>
 
             {/* Departments Section */}
-            <Container className="mt-5">
-                <h2 className="mb-4 text-center">Наши Отделения</h2>
-                <Row>
-                    {departments.map((dept) => (
-                        <Col key={dept.id} md={4} className="mb-4">
-                            <Card className="h-100">
-                                <Card.Body className="d-flex flex-column">
-                                    <Card.Title>{dept.name}</Card.Title>
-
-                                </Card.Body>
-                            </Card>
-                        </Col>
-                    ))}
-                </Row>
-            </Container>
+            <SectionContainer>
+                <StyledContainer>
+                    <SectionTitle>Наши Отделения</SectionTitle>
+                    <StyledRow>
+                        {(showAllDepartments ? departments : departments.slice(0, ITEMS_TO_SHOW)).map((dept, index) => (
+                            <StyledCol key={dept.id} md={4}>
+                                <DepartmentCard as={Link} to={`/services?departmentId=${dept.id}`}>
+                                    {dept.photo ? (
+                                        <img
+                                            className="card-img-top"
+                                            src={`${axios.defaults.baseURL}${dept.photo}?t=${Date.now()}`}
+                                            alt={dept.name}
+                                            loading="lazy"
+                                        />
+                                    ) : (
+                                        <img
+                                            className="card-img-top"
+                                            src={departmentImages[index % departmentImages.length]}
+                                            alt={dept.name}
+                                            loading="lazy"
+                                        />
+                                    )}
+                                    <div className="card-body">
+                                        <h3 className="card-title">{dept.name}</h3>
+                                    </div>
+                                </DepartmentCard>
+                            </StyledCol>
+                        ))}
+                    </StyledRow>
+                    {departments.length > ITEMS_TO_SHOW && (
+                        <ShowMoreButtonContainer>
+                            <ShowMoreButton onClick={() => setShowAllDepartments(!showAllDepartments)}>
+                                {showAllDepartments ? 'Скрыть' : 'Смотреть больше'}
+                            </ShowMoreButton>
+                        </ShowMoreButtonContainer>
+                    )}
+                </StyledContainer>
+            </SectionContainer>
 
             {/* Services Section */}
-            <Container className="mt-5">
-                <h2 className="mb-4 text-center">Наши Услуги</h2>
-                <Row>
-                    {services.map((service) => (
-                        <Col key={service.id} md={4} className="mb-4">
-                            <Card className="h-100">
-                                {service.photo ? (
-                                    <Card.Img
-                                        variant="top"
-                                        src={`${axios.defaults.baseURL}${service.photo}`}
-                                        alt={service.name}
-                                        style={{ objectFit: 'cover', height: '200px' }}
-                                    />
-                                ) : (
-                                    <Card.Img
-                                        variant="top"
-                                        src="/images/premium_photo-1673953509986-9b2bfe934ae5.png"
-                                        alt={service.name}
-                                        style={{ objectFit: 'cover', height: '200px' }}
-                                    />
-                                )}
-                                <Card.Body className="d-flex flex-column">
-                                    <Card.Title>{service.name}</Card.Title>
-                                    <Card.Text>
-                                        Цена: {service.price} руб. <br />
-                                    </Card.Text>
-                                </Card.Body>
-                            </Card>
-                        </Col>
-                    ))}
-                </Row>
-            </Container>
+            <SectionContainer>
+                <StyledContainer>
+                    <SectionTitle>Наши Услуги</SectionTitle>
+                    <StyledRow>
+                        {(showAllServices ? services : services.slice(0, ITEMS_TO_SHOW)).map((service) => (
+                            <StyledCol key={service.id} md={4}>
+                                <ServiceCard>
+                                    {service.photo ? (
+                                        <img
+                                            className="card-img-top"
+                                            src={`${axios.defaults.baseURL}${service.photo}?t=${Date.now()}`}
+                                            alt={service.name}
+                                        />
+                                    ) : (
+                                        <img
+                                            className="card-img-top"
+                                            src="/images/premium_photo-1673953509986-9b2bfe934ae5.png"
+                                            alt={service.name}
+                                        />
+                                    )}
+                                    <div className="card-body">
+                                        <h4 className="card-title">{service.name}</h4>
+                                        <PriceTag>{service.price} руб.</PriceTag>
+                                    </div>
+                                </ServiceCard>
+                            </StyledCol>
+                        ))}
+                    </StyledRow>
+                    {services.length > ITEMS_TO_SHOW && (
+                        <ShowMoreButtonContainer>
+                            <ShowMoreButton onClick={() => setShowAllServices(!showAllServices)}>
+                                {showAllServices ? 'Скрыть' : 'Смотреть больше'}
+                            </ShowMoreButton>
+                        </ShowMoreButtonContainer>
+                    )}
+                </StyledContainer>
+            </SectionContainer>
 
             {/* Doctors Section */}
-            <Container className="mt-5 mb-5">
-                <h2 className="mb-4 text-center">Наши Врачи</h2>
-                <Row>
-                    {doctors.map((doctor) => (
-                        <Col key={doctor.id} md={4} className="mb-4">
-                            <Card className="h-100">
-                                {doctor.photo ? (
-                                    <Card.Img
-                                        variant="top"
-                                        src={`${axios.defaults.baseURL}${doctor.photo}`}
-                                        alt={`${doctor.firstName} ${doctor.lastName}`}
-                                        style={{ objectFit: 'cover', height: '200px' }}
-                                    />
-                                ) : (
-                                    <Card.Img
-                                        variant="top"
-                                        src="/images/premium_photo-1673953509986-9b2bfe934ae5.png"
-                                        alt={`${doctor.firstName} ${doctor.lastName}`}
-                                        style={{ objectFit: 'cover', height: '200px' }}
-                                    />
-                                )}
-                                <Card.Body className="d-flex flex-column">
-                                    <Card.Title>{doctor.firstName} {doctor.lastName}</Card.Title>
-                                    <Card.Subtitle className="mb-2 text-muted">{doctor.specialization}</Card.Subtitle>
-                                    <Card.Text>
-                                        Отделение: {doctor.Department ? doctor.Department.name : 'Не указано'}
-                                        <br />
-    
-                                    </Card.Text>
-                                    <Button variant="primary" href={`/doctors/${doctor.id}`} className="mt-auto">
-                                        Подробнее
-                                    </Button>
-                                </Card.Body>
-                            </Card>
-                        </Col>
-                    ))}
-                </Row>
-            </Container>
+            <SectionContainer>
+                <StyledContainer>
+                    <SectionTitle>Наши Врачи</SectionTitle>
+                    <StyledRow>
+                        {(showAllDoctors ? doctors : doctors.slice(0, ITEMS_TO_SHOW)).map((doctor) => (
+                            <StyledCol key={doctor.id} md={4}>
+                                <DoctorCard>
+                                    {doctor.photo ? (
+                                        <img
+                                            className="card-img-top"
+                                            src={`${axios.defaults.baseURL}${doctor.photo}?t=${Date.now()}`}
+                                            alt={`${doctor.firstName} ${doctor.lastName}`}
+                                        />
+                                    ) : (
+                                        <img
+                                            className="card-img-top"
+                                            src="/images/premium_photo-1673953509986-9b2bfe934ae5.png"
+                                            alt={`${doctor.firstName} ${doctor.lastName}`}
+                                        />
+                                    )}
+                                    <div className="card-body">
+                                        <h4 className="card-title">{doctor.firstName} {doctor.lastName}</h4>
+                                        <h6 className="card-subtitle">{doctor.specialization}</h6>
+                                        <p className="card-text">
+                                            Отделение: {doctor.Department ? doctor.Department.name : 'Не указано'}
+                                        </p>
+                                        <StyledButton as="a" href={`/doctors/${doctor.id}`} className="mt-auto">
+                                            Подробнее
+                                        </StyledButton>
+                                    </div>
+                                </DoctorCard>
+                            </StyledCol>
+                        ))}
+                    </StyledRow>
+                    {doctors.length > ITEMS_TO_SHOW && (
+                        <ShowMoreButtonContainer>
+                            <ShowMoreButton onClick={() => setShowAllDoctors(!showAllDoctors)}>
+                                {showAllDoctors ? 'Скрыть' : 'Смотреть больше'}
+                            </ShowMoreButton>
+                        </ShowMoreButtonContainer>
+                    )}
+                </StyledContainer>
+            </SectionContainer>
 
             {/* Informative Section */}
-            <Container className="mb-5">
-                <Row className="align-items-center">
-                    <Col md={6}>
-                        <h3>Почему выбирают нас?</h3>
-                        <p>
-                            Наша клиника предоставляет широкий спектр медицинских услуг на основе современных технологий и инноваций. Мы стремимся обеспечить высокий уровень обслуживания и индивидуальный подход к каждому пациенту.
-                        </p>
-                        <ul>
-                            <li>Опытные специалисты</li>
-                            <li>Современное оборудование</li>
-                            <li>Комфортные условия</li>
-                            <li>Доступные цены</li>
-                            <li>Дружелюбный персонал</li>
-                        </ul>
-                        <Button variant="success" href="/about">Кнопка прикол</Button>
-                    </Col>
-                    <Col md={6}>
-                        <img
-                            src="/images/premium_photo-1673953509986-9b2bfe934ae5.png"
-                            alt="Почему выбирают нас"
-                            className="img-fluid rounded"
-                            style={{ maxHeight: '400px', objectFit: 'cover' }}
-                        />
-                    </Col>
-                </Row>
-            </Container>
+            <InfoSection>
+                <StyledContainer>
+                    <Row className="align-items-center">
+                        <Col md={6}>
+                            <InfoContent>
+                                <h3>Почему выбирают нас?</h3>
+                                <p>
+                                    Наша клиника предоставляет широкий спектр медицинских услуг на основе современных технологий и инноваций. Мы стремимся обеспечить высокий уровень обслуживания и индивидуальный подход к каждому пациенту.
+                                </p>
+                                <ul>
+                                    <li>Опытные специалисты</li>
+                                    <li>Современное оборудование</li>
+                                    <li>Комфортные условия</li>
+                                    <li>Доступные цены</li>
+                                    <li>Дружелюбный персонал</li>
+                                </ul>
+                                <SuccessButton as="a" href="/consultant">
+                                    Задать вопрос консультанту
+                                </SuccessButton>
+                            </InfoContent>
+                        </Col>
+                        <Col md={6}>
+                            <InfoImage
+                                src="/images/premium_photo-1673953509986-9b2bfe934ae5.png"
+                                alt="Почему выбирают нас"
+                            />
+                        </Col>
+                    </Row>
+                </StyledContainer>
+            </InfoSection>
         </div>
     );
 };

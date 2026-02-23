@@ -37,7 +37,8 @@ router.get('/auth', authenticateToken, DoctorController.auth);
 
 router.get('/:id', authenticateToken, DoctorController.findOne);
 
-router.get('/', authenticateToken, DoctorController.findAll);
+// Публичный доступ к списку врачей (для главной страницы)
+router.get('/', DoctorController.findAll);
 
 router.put(
     '/:id',

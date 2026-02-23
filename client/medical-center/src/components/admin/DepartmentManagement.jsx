@@ -38,6 +38,10 @@ function DepartmentManagement() {
     
     const [editDeptId, setEditDeptId] = useState(null);
     const [editDeptName, setEditDeptName] = useState('');
+    const [editDeptPhoto, setEditDeptPhoto] = useState(null);
+    const [editDeptPhotoPreview, setEditDeptPhotoPreview] = useState(null);
+    
+    const [newDeptPhoto, setNewDeptPhoto] = useState(null);
     
     const [deleteDeptId, setDeleteDeptId] = useState(null);
     
@@ -85,11 +89,20 @@ function DepartmentManagement() {
 
         setLoading(true);
         try {
-            const response = await axios.post('/departments/create', {
-                name: newDeptName.trim(),
+            const formData = new FormData();
+            formData.append('name', newDeptName.trim());
+            if (newDeptPhoto) {
+                formData.append('photo', newDeptPhoto);
+            }
+
+            const response = await axios.post('/departments/create', formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
             });
             setSuccess('Отдел успешно создан');
             setNewDeptName('');
+            setNewDeptPhoto(null);
             fetchDepartments();
         } catch (err) {
             setError(
@@ -105,6 +118,8 @@ function DepartmentManagement() {
     const handleOpenEditDialog = (dept) => {
         setEditDeptId(dept.id);
         setEditDeptName(dept.name);
+        setEditDeptPhoto(null);
+        setEditDeptPhotoPreview(dept.photo ? `${axios.defaults.baseURL}${dept.photo}` : null);
         setOpenEditDialog(true);
     };
 
@@ -113,6 +128,8 @@ function DepartmentManagement() {
         setOpenEditDialog(false);
         setEditDeptId(null);
         setEditDeptName('');
+        setEditDeptPhoto(null);
+        setEditDeptPhotoPreview(null);
     };
 
     
@@ -124,8 +141,16 @@ function DepartmentManagement() {
 
         setLoading(true);
         try {
-            const response = await axios.put(`/departments/${editDeptId}`, {
-                name: editDeptName.trim(),
+            const formData = new FormData();
+            formData.append('name', editDeptName.trim());
+            if (editDeptPhoto) {
+                formData.append('photo', editDeptPhoto);
+            }
+
+            const response = await axios.put(`/departments/${editDeptId}`, formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
             });
             setSuccess('Отдел успешно обновлён');
             handleCloseEditDialog();
@@ -185,7 +210,7 @@ function DepartmentManagement() {
                 <Typography variant="h6" gutterBottom>
                     Создать Новое Отделение
                 </Typography>
-                <div className="d-flex align-items-center">
+                <div className="d-flex flex-column gap-3">
                     <TextField
                         label="Название Отделения"
                         variant="outlined"
@@ -193,8 +218,35 @@ function DepartmentManagement() {
                         onChange={(e) => setNewDeptName(e.target.value)}
                         required
                         fullWidth
-                        className="me-3"
                     />
+                    <div>
+                        <input
+                            accept="image/*"
+                            style={{ display: 'none' }}
+                            id="new-dept-photo-upload"
+                            type="file"
+                            onChange={(e) => {
+                                const file = e.target.files[0];
+                                if (file) {
+                                    setNewDeptPhoto(file);
+                                }
+                            }}
+                        />
+                        <label htmlFor="new-dept-photo-upload">
+                            <Button variant="outlined" component="span" fullWidth>
+                                {newDeptPhoto ? 'Фото выбрано' : 'Выбрать фото отделения'}
+                            </Button>
+                        </label>
+                        {newDeptPhoto && (
+                            <Box mt={2}>
+                                <img
+                                    src={URL.createObjectURL(newDeptPhoto)}
+                                    alt="Preview"
+                                    style={{ maxWidth: '200px', maxHeight: '200px', objectFit: 'cover' }}
+                                />
+                            </Box>
+                        )}
+                    </div>
                     <Button
                         type="submit"
                         variant="contained"
@@ -221,6 +273,7 @@ function DepartmentManagement() {
                             <TableRow>
                                 <TableCell>ID</TableCell>
                                 <TableCell>Название Отделения</TableCell>
+                                <TableCell>Фото</TableCell>
                                 <TableCell align="right">Действия</TableCell>
                             </TableRow>
                         </TableHead>
@@ -230,6 +283,17 @@ function DepartmentManagement() {
                                     <TableRow key={dept.id}>
                                         <TableCell>{dept.id}</TableCell>
                                         <TableCell>{dept.name}</TableCell>
+                                        <TableCell>
+                                            {dept.photo ? (
+                                                <img
+                                                    src={`${axios.defaults.baseURL}${dept.photo}`}
+                                                    alt={dept.name}
+                                                    style={{ width: '50px', height: '50px', objectFit: 'cover', borderRadius: '4px' }}
+                                                />
+                                            ) : (
+                                                <span>Нет фото</span>
+                                            )}
+                                        </TableCell>
                                         <TableCell align="right">
                                             <IconButton
                                                 color="primary"
@@ -259,11 +323,11 @@ function DepartmentManagement() {
             )}
 
             {/* Диалог редактирования отделения */}
-            <Dialog open={openEditDialog} onClose={handleCloseEditDialog}>
+            <Dialog open={openEditDialog} onClose={handleCloseEditDialog} maxWidth="sm" fullWidth>
                 <DialogTitle>Редактировать Отделение</DialogTitle>
                 <DialogContent>
                     <DialogContentText>
-                        Измените название отделения ниже и нажмите "Сохранить".
+                        Измените название отделения и/или фото ниже и нажмите "Сохранить".
                     </DialogContentText>
                     <TextField
                         autoFocus
@@ -275,7 +339,37 @@ function DepartmentManagement() {
                         value={editDeptName}
                         onChange={(e) => setEditDeptName(e.target.value)}
                         required
+                        sx={{ mb: 2 }}
                     />
+                    <div>
+                        <input
+                            accept="image/*"
+                            style={{ display: 'none' }}
+                            id="edit-dept-photo-upload"
+                            type="file"
+                            onChange={(e) => {
+                                const file = e.target.files[0];
+                                if (file) {
+                                    setEditDeptPhoto(file);
+                                    setEditDeptPhotoPreview(URL.createObjectURL(file));
+                                }
+                            }}
+                        />
+                        <label htmlFor="edit-dept-photo-upload">
+                            <Button variant="outlined" component="span" fullWidth>
+                                {editDeptPhoto ? 'Изменить фото' : 'Выбрать новое фото'}
+                            </Button>
+                        </label>
+                        {editDeptPhotoPreview && (
+                            <Box mt={2}>
+                                <img
+                                    src={editDeptPhotoPreview}
+                                    alt="Preview"
+                                    style={{ maxWidth: '100%', maxHeight: '200px', objectFit: 'cover', borderRadius: '4px' }}
+                                />
+                            </Box>
+                        )}
+                    </div>
                 </DialogContent>
                 <DialogActions>
                     <Button onClick={handleCloseEditDialog}>Отмена</Button>

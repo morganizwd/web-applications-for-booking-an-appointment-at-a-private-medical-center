@@ -1,4 +1,4 @@
-const { DoctorSchedule, Doctor } = require('../models/models'); 
+const { DoctorSchedule, Doctor, User } = require('../models/models'); 
 const { validationResult } = require('express-validator');
 
 class DoctorScheduleController {
@@ -107,7 +107,11 @@ class DoctorScheduleController {
             const schedule = await DoctorSchedule.findByPk(req.params.id, {
                 include: [{
                     model: Doctor,
-                    attributes: ['id', 'login', 'firstName', 'lastName', 'specialization'],
+                    attributes: ['id', 'firstName', 'lastName', 'specialization'],
+                    include: [{
+                        model: User,
+                        attributes: ['id', 'login', 'email'],
+                    }],
                 }],
             });
             if (!schedule) {
@@ -125,7 +129,11 @@ class DoctorScheduleController {
             const schedules = await DoctorSchedule.findAll({
                 include: [{
                     model: Doctor,
-                    attributes: ['id', 'login', 'firstName', 'lastName', 'specialization'],
+                    attributes: ['id', 'firstName', 'lastName', 'specialization'],
+                    include: [{
+                        model: User,
+                        attributes: ['id', 'login', 'email'],
+                    }],
                 }],
             });
             res.json(schedules);

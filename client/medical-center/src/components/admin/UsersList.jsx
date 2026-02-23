@@ -8,6 +8,7 @@ import {
     Alert,
     Table,
     Modal,
+    Form,
 } from 'react-bootstrap';
 import axios from '../../redux/axios'; 
 import * as XLSX from 'xlsx';
@@ -23,11 +24,64 @@ function AdminDashboard() {
     const [doctorsError, setDoctorsError] = useState('');
     const [patientsError, setPatientsError] = useState('');
 
+    // Состояния для редактирования врача
+    const [showEditDoctorModal, setShowEditDoctorModal] = useState(false);
+    const [editingDoctor, setEditingDoctor] = useState(null);
+    const [editDoctorData, setEditDoctorData] = useState({
+        firstName: '',
+        lastName: '',
+        specialization: '',
+        departmentId: '',
+    });
+    const [editDoctorPhoto, setEditDoctorPhoto] = useState(null);
+    const [editDoctorPhotoPreview, setEditDoctorPhotoPreview] = useState(null);
+    const [departments, setDepartments] = useState([]);
+
     
     useEffect(() => {
         fetchDoctors();
         fetchPatients();
+        fetchDepartments();
     }, []);
+
+    const fetchDepartments = async () => {
+        try {
+            const res = await axios.get('/departments');
+            setDepartments(res.data);
+        } catch (err) {
+            console.error('Ошибка при получении списка отделений:', err);
+        }
+    };
+
+    const handleUpdateDoctor = async () => {
+        try {
+            const formData = new FormData();
+            formData.append('firstName', editDoctorData.firstName);
+            formData.append('lastName', editDoctorData.lastName);
+            formData.append('specialization', editDoctorData.specialization);
+            if (editDoctorData.departmentId) {
+                formData.append('departmentId', editDoctorData.departmentId);
+            }
+            if (editDoctorPhoto) {
+                formData.append('photo', editDoctorPhoto);
+            }
+
+            await axios.put(`/doctors/${editingDoctor.id}`, formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
+            });
+
+            setShowEditDoctorModal(false);
+            setEditingDoctor(null);
+            setEditDoctorPhoto(null);
+            setEditDoctorPhotoPreview(null);
+            fetchDoctors();
+        } catch (err) {
+            console.error('Ошибка при обновлении врача:', err);
+            alert('Не удалось обновить врача');
+        }
+    };
 
     const fetchDoctors = async () => {
         try {
@@ -189,13 +243,15 @@ function AdminDashboard() {
                             <th>Last Name</th>
                             <th>Specialization</th>
                             <th>Department</th>
+                            <th>Photo</th>
+                            <th>Actions</th>
                             <th>Created At</th>
                         </tr>
                     </thead>
                     <tbody>
                         {doctors.length === 0 ? (
                             <tr>
-                                <td colSpan="7" className="text-center">
+                                <td colSpan="9" className="text-center">
                                     No doctors to display
                                 </td>
                             </tr>
@@ -208,6 +264,36 @@ function AdminDashboard() {
                                     <td>{doc.lastName}</td>
                                     <td>{doc.specialization}</td>
                                     <td>{doc.Department ? doc.Department.name : 'N/A'}</td>
+                                    <td>
+                                        {doc.photo ? (
+                                            <img
+                                                src={`${axios.defaults.baseURL}${doc.photo}`}
+                                                alt={`${doc.firstName} ${doc.lastName}`}
+                                                style={{ width: '50px', height: '50px', objectFit: 'cover', borderRadius: '4px' }}
+                                            />
+                                        ) : (
+                                            <span>Нет фото</span>
+                                        )}
+                                    </td>
+                                    <td>
+                                        <Button
+                                            variant="primary"
+                                            size="sm"
+                                            onClick={() => {
+                                                setEditingDoctor(doc);
+                                                setEditDoctorData({
+                                                    firstName: doc.firstName,
+                                                    lastName: doc.lastName,
+                                                    specialization: doc.specialization,
+                                                    departmentId: doc.departmentId || '',
+                                                });
+                                                setEditDoctorPhotoPreview(doc.photo ? `${axios.defaults.baseURL}${doc.photo}` : null);
+                                                setShowEditDoctorModal(true);
+                                            }}
+                                        >
+                                            Редактировать
+                                        </Button>
+                                    </td>
                                     <td>{new Date(doc.createdAt).toLocaleString()}</td>
                                 </tr>
                             ))
@@ -308,6 +394,96 @@ function AdminDashboard() {
                     </tbody>
                 </Table>
             )}
+
+            {/* Модальное окно редактирования врача */}
+            <Modal show={showEditDoctorModal} onHide={() => {
+                setShowEditDoctorModal(false);
+                setEditingDoctor(null);
+                setEditDoctorPhoto(null);
+                setEditDoctorPhotoPreview(null);
+            }} size="lg">
+                <Modal.Header closeButton>
+                    <Modal.Title>Редактировать врача</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    <Form>
+                        <Form.Group className="mb-3">
+                            <Form.Label>Имя</Form.Label>
+                            <Form.Control
+                                type="text"
+                                value={editDoctorData.firstName}
+                                onChange={(e) => setEditDoctorData({ ...editDoctorData, firstName: e.target.value })}
+                            />
+                        </Form.Group>
+                        <Form.Group className="mb-3">
+                            <Form.Label>Фамилия</Form.Label>
+                            <Form.Control
+                                type="text"
+                                value={editDoctorData.lastName}
+                                onChange={(e) => setEditDoctorData({ ...editDoctorData, lastName: e.target.value })}
+                            />
+                        </Form.Group>
+                        <Form.Group className="mb-3">
+                            <Form.Label>Специализация</Form.Label>
+                            <Form.Control
+                                type="text"
+                                value={editDoctorData.specialization}
+                                onChange={(e) => setEditDoctorData({ ...editDoctorData, specialization: e.target.value })}
+                            />
+                        </Form.Group>
+                        <Form.Group className="mb-3">
+                            <Form.Label>Отделение</Form.Label>
+                            <Form.Select
+                                value={editDoctorData.departmentId}
+                                onChange={(e) => setEditDoctorData({ ...editDoctorData, departmentId: e.target.value })}
+                            >
+                                <option value="">Выберите отделение</option>
+                                {departments.map((dept) => (
+                                    <option key={dept.id} value={dept.id}>
+                                        {dept.name}
+                                    </option>
+                                ))}
+                            </Form.Select>
+                        </Form.Group>
+                        <Form.Group className="mb-3">
+                            <Form.Label>Фото</Form.Label>
+                            <Form.Control
+                                type="file"
+                                accept="image/*"
+                                onChange={(e) => {
+                                    const file = e.target.files[0];
+                                    if (file) {
+                                        setEditDoctorPhoto(file);
+                                        setEditDoctorPhotoPreview(URL.createObjectURL(file));
+                                    }
+                                }}
+                            />
+                            {editDoctorPhotoPreview && (
+                                <div className="mt-2">
+                                    <img
+                                        src={editDoctorPhotoPreview}
+                                        alt="Preview"
+                                        style={{ maxWidth: '200px', maxHeight: '200px', objectFit: 'cover', borderRadius: '4px' }}
+                                    />
+                                </div>
+                            )}
+                        </Form.Group>
+                    </Form>
+                </Modal.Body>
+                <Modal.Footer>
+                    <Button variant="secondary" onClick={() => {
+                        setShowEditDoctorModal(false);
+                        setEditingDoctor(null);
+                        setEditDoctorPhoto(null);
+                        setEditDoctorPhotoPreview(null);
+                    }}>
+                        Отмена
+                    </Button>
+                    <Button variant="primary" onClick={handleUpdateDoctor}>
+                        Сохранить
+                    </Button>
+                </Modal.Footer>
+            </Modal>
         </Container>
     );
 }

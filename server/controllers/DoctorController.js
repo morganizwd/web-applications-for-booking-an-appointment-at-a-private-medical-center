@@ -165,10 +165,36 @@ class DoctorController {
 
     async update(req, res) {
         try {
-            const { login, password, firstName, lastName, specialization } = req.body;
+            const { login, password, firstName, lastName, specialization, departmentId } = req.body;
             const doctorId = req.params.id;
 
-            if (req.user.doctorId !== parseInt(doctorId, 10)) {
+            // Проверка прав: только сам врач или админ может обновлять профиль
+            // Проверяем админа через primaryRole или через массив roles
+            const isAdmin = req.user.primaryRole === 'admin' || 
+                          (Array.isArray(req.user.roles) && req.user.roles.includes('admin')) ||
+                          (typeof req.user.roles === 'string' && req.user.roles === 'admin');
+            
+            // Проверяем, является ли пользователь врачом и обновляет ли свой профиль
+            let isOwnProfile = false;
+            if (req.user.doctorId) {
+                isOwnProfile = req.user.doctorId === parseInt(doctorId, 10);
+            } else if (!isAdmin) {
+                // Если не админ и нет doctorId, проверяем через User -> Doctor связь
+                const doctor = await Doctor.findOne({ where: { userId: req.user.userId } });
+                if (doctor) {
+                    isOwnProfile = doctor.id === parseInt(doctorId, 10);
+                }
+            }
+            
+            if (!isAdmin && !isOwnProfile) {
+                console.log('Access denied:', { 
+                    primaryRole: req.user.primaryRole, 
+                    roles: req.user.roles, 
+                    isAdmin, 
+                    isOwnProfile,
+                    doctorId: req.user.doctorId,
+                    userId: req.user.userId
+                });
                 return res.status(403).json({ message: 'Нет прав для обновления этого профиля' });
             }
 
@@ -177,7 +203,12 @@ class DoctorController {
                 return res.status(404).json({ message: 'Врач не найден' });
             }
 
-            let updatedData = { login, firstName, lastName, specialization };
+            let updatedData = {};
+            if (login) updatedData.login = login;
+            if (firstName) updatedData.firstName = firstName;
+            if (lastName) updatedData.lastName = lastName;
+            if (specialization) updatedData.specialization = specialization;
+            if (departmentId) updatedData.departmentId = parseInt(departmentId, 10);
 
             if (password) {
                 const salt = await bcrypt.genSalt(10);
@@ -195,6 +226,7 @@ class DoctorController {
                 fs.writeFileSync(path.join(uploadDir, filename), req.file.buffer);
                 updatedData.photo = photoPath;
 
+                // Удаляем старое фото, если оно существует
                 if (doctor.photo) {
                     const oldPhotoPath = path.join(__dirname, '..', doctor.photo);
                     if (fs.existsSync(oldPhotoPath)) {
@@ -205,15 +237,22 @@ class DoctorController {
 
             await doctor.update(updatedData);
 
+            // Загружаем обновленного врача с отделением
+            const updatedDoctor = await Doctor.findByPk(doctorId, {
+                include: [{ model: Department, attributes: ['id', 'name'] }]
+            });
+
             res.json({
-                id: doctor.id,
-                login: doctor.login,
-                firstName: doctor.firstName,
-                lastName: doctor.lastName,
-                specialization: doctor.specialization,
-                photo: doctor.photo,
-                createdAt: doctor.createdAt,
-                updatedAt: doctor.updatedAt,
+                id: updatedDoctor.id,
+                login: updatedDoctor.login,
+                firstName: updatedDoctor.firstName,
+                lastName: updatedDoctor.lastName,
+                specialization: updatedDoctor.specialization,
+                photo: updatedDoctor.photo,
+                departmentId: updatedDoctor.departmentId,
+                Department: updatedDoctor.Department,
+                createdAt: updatedDoctor.createdAt,
+                updatedAt: updatedDoctor.updatedAt,
             });
         } catch (error) {
             console.error('Ошибка при обновлении врача:', error);

@@ -5,11 +5,22 @@ export const registration = createAsyncThunk(
     'patient/registration',
     async (formData, { rejectWithValue }) => {
         try {
-            const response = await axios.post('/patients/registration', formData, {
-                headers: {
-                    'Content-Type': 'multipart/form-data',
-                },
-            });
+            // Преобразуем FormData в объект для нового API
+            const data = {
+                login: formData.get('login'),
+                password: formData.get('password'),
+                email: formData.get('email') || null,
+                role: 'patient',
+                profileData: {
+                    firstName: formData.get('firstName'),
+                    lastName: formData.get('lastName'),
+                    age: parseInt(formData.get('age')),
+                    phoneNumber: formData.get('phoneNumber') || null,
+                    address: formData.get('address') || null,
+                }
+            };
+            
+            const response = await axios.post('/auth/register', data);
             return response.data; 
         } catch (err) {
             if (err.response && err.response.data && err.response.data.message) {
@@ -26,7 +37,7 @@ export const login = createAsyncThunk(
     'patient/login',
     async (credentials, { rejectWithValue }) => {
         try {
-            const response = await axios.post('/patients/login', credentials);
+            const response = await axios.post('/auth/login', credentials);
             return response.data; 
         } catch (err) {
             if (err.response && err.response.data && err.response.data.message) {
@@ -43,7 +54,7 @@ export const auth = createAsyncThunk(
     'patient/auth',
     async (_, { rejectWithValue }) => {
         try {
-            const response = await axios.get('/patients/auth');
+            const response = await axios.get('/auth/auth');
             return response.data; 
         } catch (err) {
             if (err.response && err.response.data && err.response.data.message) {
@@ -168,13 +179,14 @@ const patientSlice = createSlice({
             })
             .addCase(registration.fulfilled, (state, action) => {
                 state.status = 'succeeded';
-                
-                const { patient, token } = action.payload;
-                state.patient = patient;
-                localStorage.setItem('token', token);
+                const profile = action.payload.user.profile || action.payload.user;
+                state.patient = profile;
+                localStorage.setItem('token', action.payload.token);
                 localStorage.setItem('role', 'patient');
-                localStorage.setItem('patientId', patient.id); 
-                axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+                if (profile && profile.id) {
+                    localStorage.setItem('patientId', profile.id); 
+                }
+                axios.defaults.headers.common['Authorization'] = `Bearer ${action.payload.token}`;
             })
             .addCase(registration.rejected, (state, action) => {
                 state.status = 'failed';
@@ -188,13 +200,14 @@ const patientSlice = createSlice({
             })
             .addCase(login.fulfilled, (state, action) => {
                 state.status = 'succeeded';
-                
-                const { patient, token } = action.payload;
-                state.patient = patient;
-                localStorage.setItem('token', token);
-                localStorage.setItem('role', 'patient');
-                localStorage.setItem('patientId', patient.id); 
-                axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+                const profile = action.payload.user.profile || action.payload.user;
+                state.patient = profile;
+                localStorage.setItem('token', action.payload.token);
+                localStorage.setItem('role', action.payload.user.primaryRole || 'patient');
+                if (profile && profile.id) {
+                    localStorage.setItem('patientId', profile.id); 
+                }
+                axios.defaults.headers.common['Authorization'] = `Bearer ${action.payload.token}`;
             })
             .addCase(login.rejected, (state, action) => {
                 state.status = 'failed';
@@ -207,9 +220,8 @@ const patientSlice = createSlice({
                 state.error = null;
             })
             .addCase(auth.fulfilled, (state, action) => {
-                
                 state.status = 'succeeded';
-                state.patient = action.payload.patient;
+                state.patient = action.payload.profile || action.payload;
             })
             .addCase(auth.rejected, (state, action) => {
                 state.status = 'failed';
@@ -227,7 +239,6 @@ const patientSlice = createSlice({
                 state.error = null;
             })
             .addCase(fetchAllPatients.fulfilled, (state, action) => {
-                
                 state.status = 'succeeded';
                 state.patients = action.payload.patients;
             })
@@ -262,7 +273,6 @@ const patientSlice = createSlice({
                 state.error = null;
             })
             .addCase(updatePatient.fulfilled, (state, action) => {
-                
                 state.status = 'succeeded';
                 state.patient = action.payload.patient;
                 const index = state.patients.findIndex(p => p.id === action.payload.patient.id);
@@ -300,7 +310,11 @@ const patientSlice = createSlice({
 });
 
 
-export const selectIsAuth = (state) => Boolean(state.patient.patient);
+export const selectIsAuth = (state) => {
+    const token = localStorage.getItem('token');
+    const role = localStorage.getItem('role');
+    return Boolean(state.patient.patient && token && role === 'patient');
+};
 export const selectCurrentPatient = (state) => state.patient.patient;
 export const selectAllPatients = (state) => state.patient.patients;
 export const selectPatientStatus = (state) => state.patient.status;

@@ -8,11 +8,21 @@ export const registration = createAsyncThunk(
     'doctor/registration',
     async (formData, { rejectWithValue }) => {
         try {
-            const response = await axios.post('/doctors/registration', formData, {
-                headers: {
-                    'Content-Type': 'multipart/form-data',
-                },
-            });
+            // Преобразуем FormData в объект для нового API
+            const data = {
+                login: formData.get('login'),
+                password: formData.get('password'),
+                email: formData.get('email') || null,
+                role: 'doctor',
+                profileData: {
+                    firstName: formData.get('firstName'),
+                    lastName: formData.get('lastName'),
+                    specialization: formData.get('specialization'),
+                    departmentId: parseInt(formData.get('departmentId')),
+                }
+            };
+            
+            const response = await axios.post('/auth/register', data);
             return response.data;
         } catch (err) {
             if (err.response && err.response.data && err.response.data.message) {
@@ -29,7 +39,7 @@ export const login = createAsyncThunk(
     'doctor/login',
     async (credentials, { rejectWithValue }) => {
         try {
-            const response = await axios.post('/doctors/login', credentials);
+            const response = await axios.post('/auth/login', credentials);
             return response.data;
         } catch (err) {
             if (err.response && err.response.data && err.response.data.message) {
@@ -46,7 +56,7 @@ export const auth = createAsyncThunk(
     'doctor/auth',
     async (_, { rejectWithValue }) => {
         try {
-            const response = await axios.get('/doctors/auth');
+            const response = await axios.get('/auth/auth');
             return response.data;
         } catch (err) {
             if (err.response && err.response.data && err.response.data.message) {
@@ -166,9 +176,8 @@ const doctorSlice = createSlice({
             })
             .addCase(registration.fulfilled, (state, action) => {
                 state.status = 'succeeded';
-                state.doctor = action.payload.doctor;
+                state.doctor = action.payload.user.profile || action.payload.user;
                 localStorage.setItem('token', action.payload.token);
-                
                 localStorage.setItem('role', 'doctor');
                 axios.defaults.headers.common['Authorization'] = `Bearer ${action.payload.token}`;
             })
@@ -184,10 +193,10 @@ const doctorSlice = createSlice({
             })
             .addCase(login.fulfilled, (state, action) => {
                 state.status = 'succeeded';
-                state.doctor = action.payload; 
+                state.doctor = action.payload.user.profile || action.payload.user; 
                 console.log('Login fulfilled, doctor:', action.payload); 
                 localStorage.setItem('token', action.payload.token);
-                localStorage.setItem('role', 'doctor');
+                localStorage.setItem('role', action.payload.user.primaryRole || 'doctor');
                 axios.defaults.headers.common['Authorization'] = `Bearer ${action.payload.token}`;
             })           
             .addCase(login.rejected, (state, action) => {
@@ -202,7 +211,7 @@ const doctorSlice = createSlice({
             })
             .addCase(auth.fulfilled, (state, action) => {
                 state.status = 'succeeded';
-                state.doctor = action.payload; 
+                state.doctor = action.payload.profile || action.payload; 
                 console.log('Auth fulfilled, doctor:', action.payload); 
             })
             .addCase(auth.rejected, (state, action) => {
@@ -287,7 +296,11 @@ const doctorSlice = createSlice({
 });
 
 
-export const selectIsAuth = (state) => Boolean(state.doctor.doctor);
+export const selectIsAuth = (state) => {
+    const token = localStorage.getItem('token');
+    const role = localStorage.getItem('role');
+    return Boolean(state.doctor.doctor && token && role === 'doctor');
+};
 export const selectCurrentDoctor = (state) => state.doctor.doctor;
 export const selectAllDoctors = (state) => state.doctor.doctors;
 export const selectDoctorStatus = (state) => state.doctor.status;
