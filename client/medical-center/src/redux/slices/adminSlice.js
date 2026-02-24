@@ -1,7 +1,6 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from '../axios';
 
-
 export const registration = createAsyncThunk(
     'admin/registration',
     async (adminData, { rejectWithValue }) => {
@@ -21,7 +20,6 @@ export const registration = createAsyncThunk(
     }
 );
 
-
 export const login = createAsyncThunk(
     'admin/login',
     async (credentials, { rejectWithValue }) => {
@@ -37,7 +35,6 @@ export const login = createAsyncThunk(
         }
     }
 );
-
 
 export const auth = createAsyncThunk(
     'admin/auth',
@@ -55,7 +52,6 @@ export const auth = createAsyncThunk(
     }
 );
 
-
 export const fetchAllAdmins = createAsyncThunk(
     'admin/fetchAllAdmins',
     async (_, { rejectWithValue }) => {
@@ -71,7 +67,6 @@ export const fetchAllAdmins = createAsyncThunk(
         }
     }
 );
-
 
 export const fetchAdminById = createAsyncThunk(
     'admin/fetchAdminById',
@@ -89,7 +84,6 @@ export const fetchAdminById = createAsyncThunk(
     }
 );
 
-
 export const updateAdmin = createAsyncThunk(
     'admin/updateAdmin',
     async ({ id, updatedData }, { rejectWithValue }) => {
@@ -105,7 +99,6 @@ export const updateAdmin = createAsyncThunk(
         }
     }
 );
-
 
 export const deleteAdmin = createAsyncThunk(
     'admin/deleteAdmin',
@@ -123,14 +116,12 @@ export const deleteAdmin = createAsyncThunk(
     }
 );
 
-
 const initialState = {
     admin: null,        
     admins: [],         
     status: 'idle',     
     error: null,
 };
-
 
 const adminSlice = createSlice({
     name: 'admin',
@@ -155,7 +146,7 @@ const adminSlice = createSlice({
             .addCase(registration.fulfilled, (state, action) => {
                 console.log('Registration success payload:', action.payload); 
                 state.status = 'succeeded';
-                // Для admin нет profile при регистрации
+                
                 state.admin = { 
                     id: action.payload.user.id,
                     login: action.payload.user.login,
@@ -171,14 +162,13 @@ const adminSlice = createSlice({
                 state.error = action.payload || action.error.message;
             })
 
-            
             .addCase(login.pending, (state) => {
                 state.status = 'loading';
                 state.error = null;
             })
             .addCase(login.fulfilled, (state, action) => {
                 state.status = 'succeeded';
-                // Для admin нет profile, используем сам user объект
+                
                 const userData = action.payload.user.profile || action.payload.user;
                 state.admin = { 
                     ...userData, 
@@ -197,7 +187,6 @@ const adminSlice = createSlice({
                 state.error = action.payload || action.error.message;
             })
 
-            
             .addCase(auth.pending, (state) => {
                 state.status = 'loading';
                 state.isAuthChecked = false;
@@ -206,7 +195,7 @@ const adminSlice = createSlice({
             .addCase(auth.fulfilled, (state, action) => {
                 state.status = 'succeeded';
                 state.isAuthChecked = true; 
-                // Для admin нет profile
+                
                 const userData = action.payload.profile || action.payload;
                 state.admin = { 
                     ...userData,
@@ -222,7 +211,6 @@ const adminSlice = createSlice({
                 state.error = action.payload || action.error.message;
             })
 
-            
             .addCase(fetchAllAdmins.pending, (state) => {
                 state.status = 'loading';
                 state.error = null;
@@ -236,7 +224,6 @@ const adminSlice = createSlice({
                 state.error = action.payload || action.error.message;
             })
 
-            
             .addCase(fetchAdminById.pending, (state) => {
                 state.status = 'loading';
                 state.error = null;
@@ -256,7 +243,6 @@ const adminSlice = createSlice({
                 state.error = action.payload || action.error.message;
             })
 
-            
             .addCase(updateAdmin.pending, (state) => {
                 state.status = 'loading';
                 state.error = null;
@@ -275,7 +261,6 @@ const adminSlice = createSlice({
                 state.error = action.payload || action.error.message;
             })
 
-            
             .addCase(deleteAdmin.pending, (state) => {
                 state.status = 'loading';
                 state.error = null;
@@ -298,7 +283,6 @@ const adminSlice = createSlice({
     },
 });
 
-
 export const selectIsAuth = (state) => {
     const token = localStorage.getItem('token');
     const role = localStorage.getItem('role');
@@ -308,7 +292,6 @@ export const selectCurrentAdmin = (state) => state.admin.admin;
 export const selectAllAdmins = (state) => state.admin.admins;
 export const selectAdminStatus = (state) => state.admin.status;
 export const selectAdminError = (state) => state.admin.error;
-
 
 export const { logout } = adminSlice.actions;
 export default adminSlice.reducer;

@@ -16,35 +16,27 @@ import axios from '../../redux/axios';
 function DoctorDetails() {
   const { id } = useParams(); 
 
-  
   const [doctor, setDoctor] = useState(null);
   const [loadingDoctor, setLoadingDoctor] = useState(true);
   const [doctorError, setDoctorError] = useState(null);
 
-  
   const [schedules, setSchedules] = useState([]);
   const [loadingSchedules, setLoadingSchedules] = useState(true);
   const [schedulesError, setSchedulesError] = useState(null);
 
-  
   const [services, setServices] = useState([]);
   const [loadingServices, setLoadingServices] = useState(true);
   const [servicesError, setServicesError] = useState(null);
 
-  
-  
   const [patientId] = useState(() => localStorage.getItem('patientId') || '');
 
-  
   const [selectedDayOfWeek, setSelectedDayOfWeek] = useState('');
   const [selectedTime, setSelectedTime] = useState('');
   const [selectedServiceId, setSelectedServiceId] = useState('');
 
-  
   const [createError, setCreateError] = useState('');
   const [createSuccess, setCreateSuccess] = useState('');
 
-  
   useEffect(() => {
     const fetchDoctor = async () => {
       try {
@@ -60,7 +52,6 @@ function DoctorDetails() {
     fetchDoctor();
   }, [id]);
 
-  
   useEffect(() => {
     const fetchSchedules = async () => {
       try {
@@ -76,7 +67,6 @@ function DoctorDetails() {
     fetchSchedules();
   }, []);
 
-  
   useEffect(() => {
     const fetchServices = async () => {
       try {
@@ -92,10 +82,8 @@ function DoctorDetails() {
     fetchServices();
   }, []);
 
-  
   const doctorSchedules = schedules.filter((sch) => sch.doctorId === Number(id));
 
-  
   const uniqueDays = Array.from(new Set(doctorSchedules.map((s) => s.dayOfWeek)));
 
   const dayNames = [
@@ -108,7 +96,6 @@ function DoctorDetails() {
     'Суббота',     
   ];
 
-  
   const timesInDay = [];
   for (let h = 0; h < 24; h++) {
     for (let m = 0; m < 60; m += 30) {
@@ -118,7 +105,6 @@ function DoctorDetails() {
     }
   }
 
-  
   const filteredTimes = timesInDay.filter((t) => {
     return doctorSchedules.some((sch) => {
       return (
@@ -129,7 +115,6 @@ function DoctorDetails() {
     });
   });
 
-  
   function getNextDateByDayOfWeek(targetDayOfWeek) {
     const now = new Date();
     let day = now.getDate();
@@ -152,7 +137,6 @@ function DoctorDetails() {
     );
   }
 
-  
   const handleSubmitAppointment = async (e) => {
     e.preventDefault();
     setCreateError('');
@@ -181,7 +165,6 @@ function DoctorDetails() {
       dateObject.setHours(Number(hours), Number(minutes), Number(seconds || 0), 0);
       const fullDateISO = dateObject.toISOString();
 
-      
       const payload = {
         date: fullDateISO, 
         doctorId: Number(id),
@@ -192,7 +175,6 @@ function DoctorDetails() {
       await axios.post('/appointments/create', payload);
       setCreateSuccess('Запись успешно создана!');
 
-      
       setSelectedDayOfWeek('');
       setSelectedTime('');
       setSelectedServiceId('');
@@ -206,9 +188,6 @@ function DoctorDetails() {
     }
   };
 
-  
-
-  
   if (loadingDoctor) {
     return (
       <Container className="text-center mt-5">
@@ -235,7 +214,7 @@ function DoctorDetails() {
 
   return (
     <Container className="mt-4">
-      {/* Карточка врача */}
+      {}
       <Card className="mb-4">
         <Row className="g-0">
           <Col md={4}>
@@ -264,7 +243,7 @@ function DoctorDetails() {
         </Row>
       </Card>
 
-      {/* Расписание */}
+      {}
       <h4>Расписание</h4>
       {loadingSchedules ? (
         <Spinner animation="border" role="status">
@@ -298,7 +277,7 @@ function DoctorDetails() {
         </Table>
       )}
 
-      {/* Услуги */}
+      {}
       <h4 className="mt-4">Услуги</h4>
       {loadingServices ? (
         <Spinner animation="border" role="status">
@@ -318,13 +297,13 @@ function DoctorDetails() {
         </ul>
       )}
 
-      {/* Форма записи */}
+      {}
       <h4 className="mt-4">Записаться на приём</h4>
       {createError && <Alert variant="danger">{createError}</Alert>}
       {createSuccess && <Alert variant="success">{createSuccess}</Alert>}
 
       <Form onSubmit={handleSubmitAppointment}>
-        {/* Выбор дня недели */}
+        {}
         <Form.Group className="mb-3">
           <Form.Label>День Недели</Form.Label>
           <Form.Select
@@ -343,7 +322,7 @@ function DoctorDetails() {
           </Form.Select>
         </Form.Group>
 
-        {/* Выбор времени */}
+        {}
         <Form.Group className="mb-3">
           <Form.Label>Время</Form.Label>
           <Form.Select
@@ -360,7 +339,7 @@ function DoctorDetails() {
           </Form.Select>
         </Form.Group>
 
-        {/* Выбор услуги */}
+        {}
         <Form.Group className="mb-3">
           <Form.Label>Выберите услугу</Form.Label>
           <Form.Select

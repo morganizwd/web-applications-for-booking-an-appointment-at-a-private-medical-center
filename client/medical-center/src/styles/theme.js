@@ -1,14 +1,14 @@
-// Тема приложения для styled-components
+
 export const theme = {
     colors: {
-        // Современная медицинская палитра
-        primary: '#6366f1', // Индиго
+        
+        primary: '#6366f1', 
         primaryDark: '#4f46e5',
         primaryLight: '#818cf8',
-        secondary: '#10b981', // Изумрудный
+        secondary: '#10b981', 
         secondaryDark: '#059669',
         secondaryLight: '#34d399',
-        accent: '#f59e0b', // Янтарный
+        accent: '#f59e0b', 
         accentDark: '#d97706',
         accentLight: '#fbbf24',
         success: '#10b981',
@@ -57,15 +57,15 @@ export const theme = {
             mono: "'Fira Code', 'Courier New', monospace",
         },
         fontSize: {
-            xs: '0.75rem',    // 12px
-            sm: '0.875rem',   // 14px
-            base: '1rem',     // 16px
-            lg: '1.125rem',   // 18px
-            xl: '1.25rem',    // 20px
-            '2xl': '1.5rem',  // 24px
-            '3xl': '1.875rem', // 30px
-            '4xl': '2.25rem',  // 36px
-            '5xl': '3rem',     // 48px
+            xs: '0.75rem',    
+            sm: '0.875rem',   
+            base: '1rem',     
+            lg: '1.125rem',   
+            xl: '1.25rem',    
+            '2xl': '1.5rem',  
+            '3xl': '1.875rem', 
+            '4xl': '2.25rem',  
+            '5xl': '3rem',     
         },
         fontWeight: {
             light: 300,
@@ -81,22 +81,22 @@ export const theme = {
         },
     },
     spacing: {
-        xs: '0.25rem',   // 4px
-        sm: '0.5rem',    // 8px
-        md: '1rem',      // 16px
-        lg: '1.5rem',    // 24px
-        xl: '2rem',      // 32px
-        '2xl': '3rem',   // 48px
-        '3xl': '4rem',   // 64px
-        '4xl': '6rem',   // 96px
+        xs: '0.25rem',   
+        sm: '0.5rem',    
+        md: '1rem',      
+        lg: '1.5rem',    
+        xl: '2rem',      
+        '2xl': '3rem',   
+        '3xl': '4rem',   
+        '4xl': '6rem',   
     },
     borderRadius: {
         none: '0',
-        sm: '0.25rem',   // 4px
-        md: '0.5rem',    // 8px
-        lg: '0.75rem',   // 12px
-        xl: '1rem',      // 16px
-        '2xl': '1.5rem', // 24px
+        sm: '0.25rem',   
+        md: '0.5rem',    
+        lg: '0.75rem',   
+        xl: '1rem',      
+        '2xl': '1.5rem', 
         full: '9999px',
     },
     shadows: {
@@ -106,7 +106,7 @@ export const theme = {
         xl: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
         '2xl': '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
         inner: 'inset 0 2px 4px 0 rgba(0, 0, 0, 0.06)',
-        // Современные цветные тени
+        
         primary: '0 10px 40px -10px rgba(99, 102, 241, 0.4)',
         secondary: '0 10px 40px -10px rgba(16, 185, 129, 0.4)',
         accent: '0 10px 40px -10px rgba(245, 158, 11, 0.4)',

@@ -16,20 +16,16 @@ function AdminAppointments() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  
   const [doctors, setDoctors] = useState([]);
   const [patients, setPatients] = useState([]);
   const [services, setServices] = useState([]);
   const [schedules, setSchedules] = useState([]); 
 
-  
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
 
-  
   const [currentAppointment, setCurrentAppointment] = useState(null);
 
-  
   const [formData, setFormData] = useState({
     doctorId: '',
     patientId: '',
@@ -38,18 +34,14 @@ function AdminAppointments() {
     time: '',
   });
 
-  
   const [formErrors, setFormErrors] = useState([]);
 
-  
   const [selectedDoctorSchedules, setSelectedDoctorSchedules] = useState([]);
 
-  
   const [createSuccess, setCreateSuccess] = useState('');
   const [editSuccess, setEditSuccess] = useState('');
   const [exportLoading, setExportLoading] = useState(false);
 
-  
   useEffect(() => {
     fetchAppointments();
     fetchDoctors();
@@ -58,7 +50,6 @@ function AdminAppointments() {
     fetchSchedules();
   }, []);
 
-  
   const fetchAppointments = async () => {
     try {
       const res = await axios.get('/appointments');
@@ -71,7 +62,6 @@ function AdminAppointments() {
     }
   };
 
-  
   const fetchDoctors = async () => {
     try {
       const res = await axios.get('/doctors');
@@ -81,7 +71,6 @@ function AdminAppointments() {
     }
   };
 
-  
   const fetchPatients = async () => {
     try {
       const res = await axios.get('/patients');
@@ -91,7 +80,6 @@ function AdminAppointments() {
     }
   };
 
-  
   const fetchServices = async () => {
     try {
       const res = await axios.get('/services');
@@ -101,7 +89,6 @@ function AdminAppointments() {
     }
   };
 
-  
   const fetchSchedules = async () => {
     try {
       const res = await axios.get('/doctor-schedules');
@@ -111,7 +98,6 @@ function AdminAppointments() {
     }
   };
 
-  
   const handleShowAddModal = () => {
     setFormData({
       doctorId: '',
@@ -131,11 +117,9 @@ function AdminAppointments() {
     setFormErrors([]);
     setEditSuccess('');
 
-    
     const doctorSchedules = schedules.filter(s => s.doctorId === appointment.doctorId);
     setSelectedDoctorSchedules(doctorSchedules);
 
-    
     const date = new Date(appointment.date);
     const dayOfWeek = date.getDay();
     const time = `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}:00`;
@@ -161,12 +145,10 @@ function AdminAppointments() {
     setEditSuccess('');
   };
 
-  
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
 
-    
     if (name === 'doctorId') {
       const doctorId = parseInt(value, 10);
       if (doctorId) {
@@ -187,7 +169,6 @@ function AdminAppointments() {
       }
     }
 
-    
     if (name === 'dayOfWeek') {
       setFormData(prev => ({
         ...prev,
@@ -196,7 +177,6 @@ function AdminAppointments() {
     }
   };
 
-  
   const handleAddAppointment = async (e) => {
     e.preventDefault();
     setFormErrors([]);
@@ -204,13 +184,11 @@ function AdminAppointments() {
 
     const { doctorId, patientId, serviceId, dayOfWeek, time } = formData;
 
-    
     if (!doctorId || !patientId || !serviceId || !dayOfWeek || !time) {
       setFormErrors([{ msg: 'Все поля обязательны для заполнения.' }]);
       return;
     }
 
-    
     const doctorSchedules = schedules.filter(s => s.doctorId === parseInt(doctorId, 10));
     const matchingSchedule = doctorSchedules.find(s => s.dayOfWeek === parseInt(dayOfWeek, 10)
       && s.startTime <= time
@@ -222,7 +200,6 @@ function AdminAppointments() {
       return;
     }
 
-    
     const appointmentDate = getNextDateByDayOfWeek(parseInt(dayOfWeek, 10), time);
     const fullDateISO = formatISO(appointmentDate); 
 
@@ -244,7 +221,6 @@ function AdminAppointments() {
         return;
       }
 
-      
       const res = await axios.post('/appointments/create', {
         date: fullDateISO, 
         doctorId: parseInt(doctorId, 10),
@@ -271,7 +247,6 @@ function AdminAppointments() {
     }
   };
 
-  
   const handleEditAppointment = async (e) => {
     e.preventDefault();
     setFormErrors([]);
@@ -279,13 +254,11 @@ function AdminAppointments() {
 
     const { doctorId, patientId, serviceId, dayOfWeek, time } = formData;
 
-    
     if (!doctorId || !patientId || !serviceId || !dayOfWeek || !time) {
       setFormErrors([{ msg: 'Все поля обязательны для заполнения.' }]);
       return;
     }
 
-    
     const doctorSchedules = schedules.filter(s => s.doctorId === parseInt(doctorId, 10));
     const matchingSchedule = doctorSchedules.find(s => s.dayOfWeek === parseInt(dayOfWeek, 10)
       && s.startTime <= time
@@ -297,7 +270,6 @@ function AdminAppointments() {
       return;
     }
 
-    
     const appointmentDate = getNextDateByDayOfWeek(parseInt(dayOfWeek, 10), time);
     const fullDateISO = formatISO(appointmentDate); 
 
@@ -320,7 +292,6 @@ function AdminAppointments() {
         return;
       }
 
-      
       const res = await axios.put(`/appointments/${currentAppointment.id}`, {
         date: fullDateISO,
         doctorId: parseInt(doctorId, 10),
@@ -349,7 +320,6 @@ function AdminAppointments() {
     }
   };
 
-  
   const handleDeleteAppointment = async (id) => {
     if (!window.confirm('Вы действительно хотите удалить приём?')) return;
 
@@ -362,7 +332,6 @@ function AdminAppointments() {
     }
   };
 
-  // Экспорт в Excel
   const handleExportExcel = async () => {
     setExportLoading(true);
     try {
@@ -387,7 +356,6 @@ function AdminAppointments() {
     }
   };
 
-  // Экспорт в Word
   const handleExportWord = async () => {
     setExportLoading(true);
     try {
@@ -412,12 +380,10 @@ function AdminAppointments() {
     }
   };
 
-  
   const getSchedulesForDoctor = (doctorId) => {
     return schedules.filter(s => s.doctorId === parseInt(doctorId, 10));
   };
 
-  
   function getNextDateByDayOfWeek(targetDayOfWeek, time) {
     const now = new Date();
     const nextDate = nextDay(now, targetDayOfWeek);
@@ -426,7 +392,6 @@ function AdminAppointments() {
     return nextDate;
   }
 
-  
   const dayNames = [
     'Воскресенье', 
     'Понедельник', 
@@ -437,7 +402,6 @@ function AdminAppointments() {
     'Суббота',     
   ];
 
-  
   function generateTimeSlots(startTime, endTime, interval) {
     const slots = [];
     const [startHour, startMinute] = startTime.split(':').map(Number);
@@ -458,7 +422,6 @@ function AdminAppointments() {
     return slots;
   }
 
-  
   function formatTime(time) {
     const [hours, minutes] = time.split(':').map(Number);
     const period = hours >= 12 ? 'PM' : 'AM';
@@ -466,7 +429,6 @@ function AdminAppointments() {
     return `${formattedHour}:${String(minutes).padStart(2, '0')} ${period}`;
   }
 
-  
   return (
     <Container className="mt-5">
       <h2>Управление Приёмами</h2>
@@ -573,7 +535,7 @@ function AdminAppointments() {
         </>
       )}
 
-      {/* ---- Модальное окно для добавления ---- */}
+      {}
       <Modal show={showAddModal} onHide={handleCloseModal}>
         <Modal.Header closeButton>
           <Modal.Title>Добавить Приём</Modal.Title>
@@ -593,7 +555,7 @@ function AdminAppointments() {
           )}
 
           <Form onSubmit={handleAddAppointment}>
-            {/* Выбираем врача из списка */}
+            {}
             <Form.Group className="mb-3">
               <Form.Label>Врач</Form.Label>
               <Form.Select
@@ -611,7 +573,7 @@ function AdminAppointments() {
               </Form.Select>
             </Form.Group>
 
-            {/* Отображение расписания выбранного врача */}
+            {}
             {formData.doctorId && selectedDoctorSchedules.length > 0 && (
               <Alert variant="info">
                 <strong>Расписание врача:</strong>
@@ -625,7 +587,7 @@ function AdminAppointments() {
               </Alert>
             )}
 
-            {/* Выбираем день недели после выбора врача */}
+            {}
             <Form.Group className="mb-3">
               <Form.Label>День Недели</Form.Label>
               <Form.Select
@@ -648,7 +610,7 @@ function AdminAppointments() {
               </Form.Select>
             </Form.Group>
 
-            {/* Выбираем время после выбора дня недели */}
+            {}
             <Form.Group className="mb-3">
               <Form.Label>Время</Form.Label>
               <Form.Select
@@ -676,7 +638,7 @@ function AdminAppointments() {
               </Form.Select>
             </Form.Group>
 
-            {/* Список пациентов */}
+            {}
             <Form.Group className="mb-3">
               <Form.Label>Пациент</Form.Label>
               <Form.Select
@@ -694,7 +656,7 @@ function AdminAppointments() {
               </Form.Select>
             </Form.Group>
 
-            {/* Список услуг */}
+            {}
             <Form.Group className="mb-3">
               <Form.Label>Услуга</Form.Label>
               <Form.Select
@@ -719,7 +681,7 @@ function AdminAppointments() {
         </Modal.Body>
       </Modal>
 
-      {/* ---- Модальное окно для редактирования ---- */}
+      {}
       <Modal show={showEditModal} onHide={handleCloseModal}>
         <Modal.Header closeButton>
           <Modal.Title>Редактировать Приём</Modal.Title>
@@ -739,7 +701,7 @@ function AdminAppointments() {
           )}
 
           <Form onSubmit={handleEditAppointment}>
-            {/* Выбираем врача из списка */}
+            {}
             <Form.Group className="mb-3">
               <Form.Label>Врач</Form.Label>
               <Form.Select
@@ -757,7 +719,7 @@ function AdminAppointments() {
               </Form.Select>
             </Form.Group>
 
-            {/* Отображение расписания выбранного врача */}
+            {}
             {formData.doctorId && selectedDoctorSchedules.length > 0 && (
               <Alert variant="info">
                 <strong>Расписание врача:</strong>
@@ -771,7 +733,7 @@ function AdminAppointments() {
               </Alert>
             )}
 
-            {/* Выбираем день недели после выбора врача */}
+            {}
             <Form.Group className="mb-3">
               <Form.Label>День Недели</Form.Label>
               <Form.Select
@@ -794,7 +756,7 @@ function AdminAppointments() {
               </Form.Select>
             </Form.Group>
 
-            {/* Выбираем время после выбора дня недели */}
+            {}
             <Form.Group className="mb-3">
               <Form.Label>Время</Form.Label>
               <Form.Select
@@ -822,7 +784,7 @@ function AdminAppointments() {
               </Form.Select>
             </Form.Group>
 
-            {/* Список пациентов */}
+            {}
             <Form.Group className="mb-3">
               <Form.Label>Пациент</Form.Label>
               <Form.Select
@@ -840,7 +802,7 @@ function AdminAppointments() {
               </Form.Select>
             </Form.Group>
 
-            {/* Список услуг */}
+            {}
             <Form.Group className="mb-3">
               <Form.Label>Услуга</Form.Label>
               <Form.Select
@@ -868,7 +830,6 @@ function AdminAppointments() {
   );
 }
 
-
 function generateTimeSlots(startTime, endTime, interval) {
   const slots = [];
   const [startHour, startMinute] = startTime.split(':').map(Number);
@@ -888,7 +849,6 @@ function generateTimeSlots(startTime, endTime, interval) {
 
   return slots;
 }
-
 
 function formatTime(time) {
   const [hours, minutes] = time.split(':').map(Number);

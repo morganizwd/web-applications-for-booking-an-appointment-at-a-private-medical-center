@@ -19,17 +19,14 @@ const AdminDoctorSchedule = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  
   const [filterDoctorId, setFilterDoctorId] = useState('');
   
   const [filterDayOfWeek, setFilterDayOfWeek] = useState('');
 
-  
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [currentSchedule, setCurrentSchedule] = useState(null);
 
-  
   const [formData, setFormData] = useState({
     doctorId: '',
     dayOfWeek: '',
@@ -44,7 +41,6 @@ const AdminDoctorSchedule = () => {
     fetchSchedules();  
   }, []);
 
-  
   const fetchDoctors = async () => {
     try {
       const response = await axios.get('/doctors');
@@ -55,7 +51,6 @@ const AdminDoctorSchedule = () => {
     }
   };
 
-  
   const fetchSchedules = async () => {
     try {
       const response = await axios.get('/doctor-schedules');
@@ -68,7 +63,6 @@ const AdminDoctorSchedule = () => {
     }
   };
 
-  
   const handleShowAddModal = () => {
     setFormData({
       doctorId: '',
@@ -98,7 +92,6 @@ const AdminDoctorSchedule = () => {
     setCurrentSchedule(null);
   };
 
-  
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prevState) => ({
@@ -161,7 +154,6 @@ const AdminDoctorSchedule = () => {
     }
   };
 
-  
   const handleFilterDoctor = (e) => {
     setFilterDoctorId(e.target.value);
   };
@@ -170,12 +162,10 @@ const AdminDoctorSchedule = () => {
     setFilterDayOfWeek(e.target.value);
   };
 
-  
   const filteredSchedules = schedules
     .filter((sch) => (filterDoctorId ? sch.doctorId === Number(filterDoctorId) : true))
     .filter((sch) => (filterDayOfWeek ? sch.dayOfWeek === Number(filterDayOfWeek) : true));
 
-  
   const handleExportExcel = () => {
     try {
       const dataForExcel = filteredSchedules.map((sch) => ({
@@ -212,7 +202,6 @@ const AdminDoctorSchedule = () => {
     }
   };
 
-  
   const handleExportWord = () => {
     try {
       
@@ -257,7 +246,6 @@ const AdminDoctorSchedule = () => {
 
       tableHTML += `</tbody></table>`;
 
-      
       const htmlContent = `
         <html>
           <head>
@@ -271,7 +259,6 @@ const AdminDoctorSchedule = () => {
         </html>
       `;
 
-      
       const blob = new Blob([htmlContent], {
         type: 'application/msword;charset=utf-8',
       });
@@ -304,7 +291,7 @@ const AdminDoctorSchedule = () => {
         <Alert variant="danger">{error}</Alert>
       ) : (
         <>
-          {/* Фильтр по врачу */}
+          {}
           <Row className="mb-3">
             <Col md={4}>
               <Form.Group controlId="doctorFilter">
@@ -320,7 +307,7 @@ const AdminDoctorSchedule = () => {
               </Form.Group>
             </Col>
 
-            {/* Фильтр по дню недели */}
+            {}
             <Col md={4}>
               <Form.Group controlId="dayOfWeekFilter">
                 <Form.Label>Фильтр по дню недели</Form.Label>
@@ -343,7 +330,7 @@ const AdminDoctorSchedule = () => {
             <Button variant="outline-success" onClick={handleExportExcel} className="me-2">
               Экспорт в Excel
             </Button>
-            {/* Кнопка экспорта в Word */}
+            {}
             <Button variant="outline-info" onClick={handleExportWord}>
               Экспорт в Word
             </Button>
@@ -408,7 +395,7 @@ const AdminDoctorSchedule = () => {
         </>
       )}
 
-      {/* Модальное окно для добавления расписания */}
+      {}
       <Modal show={showAddModal} onHide={handleCloseModal}>
         <Modal.Header closeButton>
           <Modal.Title>Добавить Расписание</Modal.Title>
@@ -493,7 +480,7 @@ const AdminDoctorSchedule = () => {
         </Modal.Body>
       </Modal>
 
-      {/* Модальное окно для редактирования расписания */}
+      {}
       <Modal show={showEditModal} onHide={handleCloseModal}>
         <Modal.Header closeButton>
           <Modal.Title>Редактировать Расписание</Modal.Title>

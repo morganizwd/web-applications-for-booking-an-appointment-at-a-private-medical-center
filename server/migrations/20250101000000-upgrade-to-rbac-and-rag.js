@@ -1,18 +1,16 @@
 'use strict';
 
-/** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
     const transaction = await queryInterface.sequelize.transaction();
     
     try {
-      // 1. Установка расширения pgvector
+      
       await queryInterface.sequelize.query(
         'CREATE EXTENSION IF NOT EXISTS vector;',
         { transaction }
       );
 
-      // 2. Создание таблицы Users
       await queryInterface.createTable('Users', {
         id: {
           allowNull: false,
@@ -47,7 +45,6 @@ module.exports = {
         }
       }, { transaction });
 
-      // 3. Создание таблицы Roles
       await queryInterface.createTable('Roles', {
         id: {
           allowNull: false,
@@ -74,7 +71,6 @@ module.exports = {
         }
       }, { transaction });
 
-      // 4. Создание таблицы UserRoles
       await queryInterface.createTable('UserRoles', {
         id: {
           allowNull: false,
@@ -112,14 +108,12 @@ module.exports = {
         }
       }, { transaction });
 
-      // 5. Добавление уникального индекса для UserRoles
       await queryInterface.addIndex('UserRoles', ['userId', 'roleId'], {
         unique: true,
         name: 'userRole_unique',
         transaction
       });
 
-      // 6. Обновление таблицы Patients: добавление userId, удаление login/password
       await queryInterface.addColumn('Patients', 'userId', {
         type: Sequelize.INTEGER,
         allowNull: true,
@@ -132,7 +126,6 @@ module.exports = {
         onDelete: 'CASCADE'
       }, { transaction });
 
-      // 7. Обновление таблицы Doctors: добавление userId, удаление login/password
       await queryInterface.addColumn('Doctors', 'userId', {
         type: Sequelize.INTEGER,
         allowNull: true,
@@ -145,13 +138,11 @@ module.exports = {
         onDelete: 'CASCADE'
       }, { transaction });
 
-      // 8. Добавление description в Departments
       await queryInterface.addColumn('Departments', 'description', {
         type: Sequelize.TEXT,
         allowNull: true
       }, { transaction });
 
-      // 9. Обновление таблицы Services: добавление duration и description
       await queryInterface.addColumn('Services', 'duration', {
         type: Sequelize.INTEGER,
         allowNull: false,
@@ -163,7 +154,6 @@ module.exports = {
         allowNull: true
       }, { transaction });
 
-      // 10. Обновление таблицы Appointments: добавление status и notes
       await queryInterface.addColumn('Appointments', 'status', {
         type: Sequelize.ENUM('scheduled', 'confirmed', 'completed', 'cancelled', 'no_show'),
         allowNull: false,
@@ -175,7 +165,6 @@ module.exports = {
         allowNull: true
       }, { transaction });
 
-      // 11. Обновление таблицы Diagnoses: добавление appointmentId
       await queryInterface.addColumn('Diagnoses', 'appointmentId', {
         type: Sequelize.INTEGER,
         allowNull: true,
@@ -187,10 +176,6 @@ module.exports = {
         onDelete: 'SET NULL'
       }, { transaction });
 
-      // 12. Обновление DoctorSchedule: расширение dayOfWeek до 0-6
-      // (миграция данных не требуется, так как валидация только на уровне приложения)
-
-      // 13. Создание таблицы KnowledgeDocuments
       await queryInterface.createTable('KnowledgeDocuments', {
         id: {
           allowNull: false,
@@ -250,7 +235,6 @@ module.exports = {
         }
       }, { transaction });
 
-      // 14. Создание таблицы KnowledgeChunks
       await queryInterface.createTable('KnowledgeChunks', {
         id: {
           allowNull: false,
@@ -290,7 +274,6 @@ module.exports = {
         }
       }, { transaction });
 
-      // 15. Создание таблицы KnowledgeEmbeddings с использованием vector типа
       await queryInterface.createTable('KnowledgeEmbeddings', {
         id: {
           allowNull: false,
@@ -323,12 +306,6 @@ module.exports = {
         }
       }, { transaction });
 
-      // Создание индекса для векторного поиска (после создания таблицы)
-      // Примечание: для использования типа vector нужно вручную изменить тип колонки
-      // ALTER TABLE "KnowledgeEmbeddings" ALTER COLUMN embedding TYPE vector(384);
-      // CREATE INDEX ON "KnowledgeEmbeddings" USING ivfflat (embedding vector_cosine_ops);
-
-      // 16. Создание таблицы ReportJobs
       await queryInterface.createTable('ReportJobs', {
         id: {
           allowNull: false,
@@ -377,7 +354,6 @@ module.exports = {
         }
       }, { transaction });
 
-      // 17. Создание таблицы ReportFiles
       await queryInterface.createTable('ReportFiles', {
         id: {
           allowNull: false,
@@ -418,7 +394,6 @@ module.exports = {
         }
       }, { transaction });
 
-      // 18. Создание таблицы AuditLogs
       await queryInterface.createTable('AuditLogs', {
         id: {
           allowNull: false,
@@ -466,15 +441,12 @@ module.exports = {
         }
       }, { transaction });
 
-      // 19. Миграция данных из старых таблиц в новую структуру
-      // Сначала создаём роли
       await queryInterface.bulkInsert('Roles', [
         { name: 'admin', description: 'Администратор системы', createdAt: new Date(), updatedAt: new Date() },
         { name: 'doctor', description: 'Врач', createdAt: new Date(), updatedAt: new Date() },
         { name: 'patient', description: 'Пациент', createdAt: new Date(), updatedAt: new Date() }
       ], { transaction });
 
-      // Миграция Admins в Users
       const [admins] = await queryInterface.sequelize.query(
         'SELECT id, login, password FROM "Admins"',
         { transaction, type: Sequelize.QueryTypes.SELECT }
@@ -505,7 +477,6 @@ module.exports = {
         }
       }
 
-      // Миграция Patients в Users
       const [patients] = await queryInterface.sequelize.query(
         'SELECT id, login, password FROM "Patients"',
         { transaction, type: Sequelize.QueryTypes.SELECT }
@@ -543,7 +514,6 @@ module.exports = {
         }
       }
 
-      // Миграция Doctors в Users
       const [doctors] = await queryInterface.sequelize.query(
         'SELECT id, login, password FROM "Doctors"',
         { transaction, type: Sequelize.QueryTypes.SELECT }
@@ -581,7 +551,6 @@ module.exports = {
         }
       }
 
-      // Установка NOT NULL для userId после миграции данных
       await queryInterface.changeColumn('Patients', 'userId', {
         type: Sequelize.INTEGER,
         allowNull: false,
@@ -605,15 +574,14 @@ module.exports = {
     const transaction = await queryInterface.sequelize.transaction();
     
     try {
-      // Удаление новых таблиц в обратном порядке
+      
       await queryInterface.dropTable('AuditLogs', { transaction });
       await queryInterface.dropTable('ReportFiles', { transaction });
       await queryInterface.dropTable('ReportJobs', { transaction });
       await queryInterface.dropTable('KnowledgeEmbeddings', { transaction });
       await queryInterface.dropTable('KnowledgeChunks', { transaction });
       await queryInterface.dropTable('KnowledgeDocuments', { transaction });
-      
-      // Удаление колонок из существующих таблиц
+
       await queryInterface.removeColumn('Diagnoses', 'appointmentId', { transaction });
       await queryInterface.removeColumn('Appointments', 'notes', { transaction });
       await queryInterface.removeColumn('Appointments', 'status', { transaction });
@@ -622,15 +590,11 @@ module.exports = {
       await queryInterface.removeColumn('Departments', 'description', { transaction });
       await queryInterface.removeColumn('Doctors', 'userId', { transaction });
       await queryInterface.removeColumn('Patients', 'userId', { transaction });
-      
-      // Удаление таблиц RBAC
+
       await queryInterface.dropTable('UserRoles', { transaction });
       await queryInterface.dropTable('Roles', { transaction });
       await queryInterface.dropTable('Users', { transaction });
-      
-      // Удаление расширения pgvector (опционально, может использоваться другими таблицами)
-      // await queryInterface.sequelize.query('DROP EXTENSION IF EXISTS vector;', { transaction });
-      
+
       await transaction.commit();
     } catch (error) {
       await transaction.rollback();

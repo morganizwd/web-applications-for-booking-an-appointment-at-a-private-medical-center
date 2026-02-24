@@ -5,7 +5,7 @@ export const registration = createAsyncThunk(
     'patient/registration',
     async (formData, { rejectWithValue }) => {
         try {
-            // Преобразуем FormData в объект для нового API
+            
             const data = {
                 login: formData.get('login'),
                 password: formData.get('password'),
@@ -32,7 +32,6 @@ export const registration = createAsyncThunk(
     }
 );
 
-
 export const login = createAsyncThunk(
     'patient/login',
     async (credentials, { rejectWithValue }) => {
@@ -49,7 +48,6 @@ export const login = createAsyncThunk(
     }
 );
 
-
 export const auth = createAsyncThunk(
     'patient/auth',
     async (_, { rejectWithValue }) => {
@@ -65,7 +63,6 @@ export const auth = createAsyncThunk(
         }
     }
 );
-
 
 export const fetchAllPatients = createAsyncThunk(
     'patient/fetchAllPatients',
@@ -84,7 +81,6 @@ export const fetchAllPatients = createAsyncThunk(
     }
 );
 
-
 export const fetchPatientById = createAsyncThunk(
     'patient/fetchPatientById',
     async (patientId, { rejectWithValue }) => {
@@ -101,7 +97,6 @@ export const fetchPatientById = createAsyncThunk(
         }
     }
 );
-
 
 export const updatePatient = createAsyncThunk(
     'patient/updatePatient',
@@ -129,7 +124,6 @@ export const updatePatient = createAsyncThunk(
     }
 );
 
-
 export const deletePatient = createAsyncThunk(
     'patient/deletePatient',
     async (patientId, { rejectWithValue }) => {
@@ -146,14 +140,12 @@ export const deletePatient = createAsyncThunk(
     }
 );
 
-
 const initialState = {
     patient: null,       
     patients: [],        
     status: 'idle',      
     error: null,
 };
-
 
 const patientSlice = createSlice({
     name: 'patient',
@@ -193,7 +185,6 @@ const patientSlice = createSlice({
                 state.error = action.payload || action.error.message;
             })
 
-            
             .addCase(login.pending, (state) => {
                 state.status = 'loading';
                 state.error = null;
@@ -214,7 +205,6 @@ const patientSlice = createSlice({
                 state.error = action.payload || action.error.message;
             })
 
-            
             .addCase(auth.pending, (state) => {
                 state.status = 'loading';
                 state.error = null;
@@ -233,7 +223,6 @@ const patientSlice = createSlice({
                 delete axios.defaults.headers.common['Authorization'];
             })
 
-            
             .addCase(fetchAllPatients.pending, (state) => {
                 state.status = 'loading';
                 state.error = null;
@@ -247,7 +236,6 @@ const patientSlice = createSlice({
                 state.error = action.payload || action.error.message;
             })
 
-            
             .addCase(fetchPatientById.pending, (state) => {
                 state.status = 'loading';
                 state.error = null;
@@ -267,7 +255,6 @@ const patientSlice = createSlice({
                 state.error = action.payload || action.error.message;
             })
 
-            
             .addCase(updatePatient.pending, (state) => {
                 state.status = 'loading';
                 state.error = null;
@@ -285,7 +272,6 @@ const patientSlice = createSlice({
                 state.error = action.payload || action.error.message;
             })
 
-            
             .addCase(deletePatient.pending, (state) => {
                 state.status = 'loading';
                 state.error = null;
@@ -309,7 +295,6 @@ const patientSlice = createSlice({
     },
 });
 
-
 export const selectIsAuth = (state) => {
     const token = localStorage.getItem('token');
     const role = localStorage.getItem('role');
@@ -319,7 +304,6 @@ export const selectCurrentPatient = (state) => state.patient.patient;
 export const selectAllPatients = (state) => state.patient.patients;
 export const selectPatientStatus = (state) => state.patient.status;
 export const selectPatientError = (state) => state.patient.error;
-
 
 export const { logout } = patientSlice.actions;
 export default patientSlice.reducer;

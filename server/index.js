@@ -3,6 +3,7 @@ const express = require('express');
 const path = require('path');
 const sequelize = require('./db.js');
 const models = require('./models/models.js');
+const ragService = require('./services/ragService');
 const cors = require('cors');
 const helmet = require('helmet');
 const compression = require('compression');
@@ -54,6 +55,10 @@ const start = async () => {
     await sequelize.authenticate();
     await sequelize.sync({ alter: true });
     console.log('База данных и таблицы синхронизированы');
+
+    // Автоматически допроцессим все документы базы знаний,
+    // у которых нет чанков или embeddings
+    await ragService.backfillKnowledgeBase();
 
     app.listen(PORT, () => console.log(`Сервер запущен на порту ${PORT}`));
   } catch (e) {

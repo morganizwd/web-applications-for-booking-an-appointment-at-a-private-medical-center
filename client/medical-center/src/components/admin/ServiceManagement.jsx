@@ -1,6 +1,5 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import axios from '../../redux/axios'; 
-
 
 import {
     TextField,
@@ -27,7 +26,6 @@ import {
     CircularProgress,
     Box,
 } from '@mui/material';
-
 
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -56,14 +54,13 @@ function ServiceManagement() {
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
 
-    
     const [openEditDialog, setOpenEditDialog] = useState(false);
     const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
 
-    
     const [departments, setDepartmentsList] = useState([]);
 
-    
+    const fileInputRef = useRef(null);
+
     const fetchDepartments = async () => {
         try {
             const response = await axios.get('/departments');
@@ -74,7 +71,6 @@ function ServiceManagement() {
         }
     };
 
-    
     const fetchServices = async () => {
         setLoading(true);
         setError('');
@@ -91,7 +87,6 @@ function ServiceManagement() {
         }
     };
 
-    
     useEffect(() => {
         const initialize = async () => {
             const departmentsData = await fetchDepartments();
@@ -101,19 +96,16 @@ function ServiceManagement() {
         initialize();
     }, []);
 
-    
     const handleCreateService = async (e) => {
         e.preventDefault();
         setError('');
         setSuccess('');
 
-        
         if (!newServiceName.trim() || !newServicePrice || !newServiceDepartment) {
             setError('Пожалуйста, заполните все обязательные поля.');
             return;
         }
 
-        
         const formData = new FormData();
         formData.append('name', newServiceName.trim());
         formData.append('price', parseFloat(newServicePrice));
@@ -122,7 +114,6 @@ function ServiceManagement() {
             formData.append('photo', newServicePhoto);
         }
 
-        
         console.log('Отправляемые данные для создания услуги:', {
             name: newServiceName.trim(),
             price: parseFloat(newServicePrice),
@@ -156,7 +147,6 @@ function ServiceManagement() {
         }
     };
 
-    
     const handleNewServicePhotoChange = (e) => {
         const file = e.target.files[0];
         if (file) {
@@ -169,7 +159,6 @@ function ServiceManagement() {
         }
     };
 
-    
     const handleOpenEditDialog = (service) => {
         setEditServiceId(service.id);
         setEditServiceName(service.name);
@@ -180,7 +169,6 @@ function ServiceManagement() {
         setOpenEditDialog(true);
     };
 
-    
     const handleCloseEditDialog = () => {
         setOpenEditDialog(false);
         setEditServiceId(null);
@@ -191,18 +179,15 @@ function ServiceManagement() {
         setEditServicePhotoPreview(null);
     };
 
-    
     const handleUpdateService = async () => {
         setError('');
         setSuccess('');
 
-        
         if (!editServiceName.trim() || !editServicePrice || !editServiceDepartment) {
             setError('Пожалуйста, заполните все обязательные поля.');
             return;
         }
 
-        
         const formData = new FormData();
         formData.append('name', editServiceName.trim());
         formData.append('price', parseFloat(editServicePrice));
@@ -232,7 +217,6 @@ function ServiceManagement() {
         }
     };
 
-    
     const handleEditServicePhotoChange = (e) => {
         const file = e.target.files[0];
         if (file) {
@@ -245,19 +229,16 @@ function ServiceManagement() {
         }
     };
 
-    
     const handleOpenDeleteDialog = (serviceId) => {
         setDeleteServiceId(serviceId);
         setOpenDeleteDialog(true);
     };
 
-    
     const handleCloseDeleteDialog = () => {
         setOpenDeleteDialog(false);
         setDeleteServiceId(null);
     };
 
-    
     const handleDeleteService = async () => {
         setError('');
         setSuccess('');
@@ -284,11 +265,11 @@ function ServiceManagement() {
                 Управление Услугами
             </Typography>
 
-            {/* Отображение ошибок и успехов */}
+            {}
             {error && <Alert severity="error" className="mb-3">{error}</Alert>}
             {success && <Alert severity="success" className="mb-3">{success}</Alert>}
 
-            {/* Форма создания новой услуги */}
+            {}
             <form onSubmit={handleCreateService} className="mb-5">
                 <Typography variant="h6" gutterBottom>
                     Создать Новую Услугу
@@ -340,36 +321,16 @@ function ServiceManagement() {
                             type="file"
                             hidden
                             accept="image/*"
-                            onChange={handleNewServicePhotoChange}
+                            ref={fileInputRef}
+                            onChange={(e) => setNewServicePhoto(e.target.files[0])}
                         />
-                    </Button>
-                    {newServicePhotoPreview && (
-                        <Box
-                            component="img"
-                            src={newServicePhotoPreview}
-                            alt="Preview"
-                            sx={{
-                                width: 200,
-                                height: 200,
-                                objectFit: 'cover',
-                                borderRadius: '8px',
-                                mb: 3,
-                            }}
-                        />
-                    )}
-                    <Button
-                        type="submit"
-                        variant="contained"
-                        color="primary"
-                        disabled={loading}
-                        className="mt-2"
-                    >
-                        {loading ? <CircularProgress size={24} /> : 'Создать Услугу'}
                     </Button>
                 </div>
+                <Button type="submit" variant="contained" color="primary" className="mt-3">
+                    Создать
+                </Button>
             </form>
 
-            {/* Таблица со списком услуг */}
             <Typography variant="h6" gutterBottom>
                 Список Услуг
             </Typography>
@@ -443,7 +404,7 @@ function ServiceManagement() {
                 </TableContainer>
             )}
 
-            {/* Диалог редактирования услуги */}
+            {}
             <Dialog open={openEditDialog} onClose={handleCloseEditDialog}>
                 <DialogTitle>Редактировать Услугу</DialogTitle>
                 <DialogContent>
@@ -500,33 +461,19 @@ function ServiceManagement() {
                             type="file"
                             hidden
                             accept="image/*"
-                            onChange={handleEditServicePhotoChange}
+                            ref={fileInputRef}
+                            onChange={(e) => setEditServicePhoto(e.target.files[0])}
                         />
                     </Button>
-                    {editServicePhotoPreview && (
-                        <Box
-                            component="img"
-                            src={editServicePhotoPreview}
-                            alt="Preview"
-                            sx={{
-                                width: 200,
-                                height: 200,
-                                objectFit: 'cover',
-                                borderRadius: '8px',
-                                mb: 3,
-                            }}
-                        />
-                    )}
                 </DialogContent>
                 <DialogActions>
                     <Button onClick={handleCloseEditDialog}>Отмена</Button>
                     <Button onClick={handleUpdateService} variant="contained" color="primary">
-                        Сохранить
+                        Обновить
                     </Button>
                 </DialogActions>
             </Dialog>
 
-            {/* Диалог подтверждения удаления услуги */}
             <Dialog open={openDeleteDialog} onClose={handleCloseDeleteDialog}>
                 <DialogTitle>Удалить Услугу</DialogTitle>
                 <DialogContent>

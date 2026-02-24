@@ -92,10 +92,9 @@ class DepartmentController {
                 }
             }
 
-            // Обработка загрузки новой фотографии
             let photoPath = department.photo;
             if (req.file) {
-                // Удаляем старое фото, если оно существует
+                
                 if (department.photo) {
                     const oldPhotoPath = path.join(__dirname, '..', department.photo);
                     if (fs.existsSync(oldPhotoPath)) {

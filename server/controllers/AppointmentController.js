@@ -21,10 +21,9 @@ class AppointmentController {
                 return res.status(404).json({ message: 'Врач не найден' });
             }
 
-            // Определение patientId в зависимости от роли
             let finalPatientId = patientId;
             if (userRole === 'patient') {
-                // Пациент может создавать запись только для себя
+                
                 const patient = await PatientModel.findOne({ where: { userId } });
                 if (!patient) {
                     return res.status(404).json({ message: 'Профиль пациента не найден' });
@@ -37,7 +36,6 @@ class AppointmentController {
                 }
             }
 
-            
             const service = await Service.findByPk(serviceId);
             if (!service) {
                 return res.status(404).json({ message: 'Услуга не найдена' });
@@ -61,7 +59,6 @@ class AppointmentController {
                     .json({ message: 'Врач уже занят в указанное время' });
             }
 
-            // Проверка расписания врача и длительности услуги
             const appointmentDate = new Date(date);
             const dayOfWeek = appointmentDate.getDay();
             const appointmentTime = appointmentDate.toTimeString().slice(0, 5);
@@ -81,7 +78,6 @@ class AppointmentController {
                 return res.status(400).json({ message: 'Время записи вне рабочего времени врача' });
             }
 
-            // Проверка длительности услуги
             const endTime = new Date(appointmentDate.getTime() + service.duration * 60000);
             const endTimeStr = endTime.toTimeString().slice(0, 5);
             if (endTimeStr > schedule.endTime) {
@@ -143,7 +139,6 @@ class AppointmentController {
             const userId = req.user.userId;
             const userRole = req.user.primaryRole;
 
-            // Ограничение доступа в зависимости от роли
             if (userRole === 'patient') {
                 const patient = await PatientModel.findOne({ where: { userId } });
                 if (patient) {
@@ -222,13 +217,12 @@ class AppointmentController {
                 return res.status(404).json({ message: 'Прием не найден' });
             }
 
-            // Проверка прав доступа
             if (userRole === 'patient') {
                 const patient = await PatientModel.findOne({ where: { userId } });
                 if (!patient || appointment.patientId !== patient.id) {
                     return res.status(403).json({ message: 'Доступ запрещён' });
                 }
-                // Пациент может только отменять записи
+                
                 if (status && status !== 'cancelled') {
                     return res.status(403).json({ message: 'Пациент может только отменять записи' });
                 }

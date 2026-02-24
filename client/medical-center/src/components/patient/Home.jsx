@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Row, Col, Spinner, Alert, Carousel } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
-import axios from '../../redux/axios';
+import axios from '../../redux/axios'; 
 import {
     StyledContainer,
     LoadingContainer,
@@ -24,18 +24,17 @@ import {
     ShowMoreButton,
 } from './Home.styled'; 
 
-// Массив стоковых изображений для отделений (Unsplash)
 const departmentImages = [
-    'https://images.unsplash.com/photo-1576091160399-112ba8d25d1f?w=800&q=80', // Кардиология
-    'https://images.unsplash.com/photo-1559757148-5c350d0d3c56?w=800&q=80', // Неврология
-    'https://images.unsplash.com/photo-1582719471384-894fbb16e074?w=800&q=80', // Терапия
-    'https://images.unsplash.com/photo-1551601651-2a8555f1a136?w=800&q=80', // Хирургия
-    'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=800&q=80', // Педиатрия
-    'https://images.unsplash.com/photo-1559757175-0eb30cd8c063?w=800&q=80', // Гинекология
-    'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=800&q=80', // Офтальмология
-    'https://images.unsplash.com/photo-1551601651-2a8555f1a136?w=800&q=80', // Стоматология
-    'https://images.unsplash.com/photo-1576091160399-112ba8d25d1f?w=800&q=80', // Дерматология
-    'https://images.unsplash.com/photo-1559757148-5c350d0d3c56?w=800&q=80', // Ортопедия
+    'https://images.unsplash.com/photo-1559757148-5c350d0d3c56?w=800',
+    'https://images.unsplash.com/photo-1576091160399-112ba8d25d1f?w=800',
+    'https://images.unsplash.com/photo-1551601651-2a8555f1a136?w=800',
+    'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=800',
+    'https://images.unsplash.com/photo-1559757175-0eb30cd8c063?w=800',
+    'https://images.unsplash.com/photo-1551601651-2a8555f1a136?w=800',
+    'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=800',
+    'https://images.unsplash.com/photo-1559757175-0eb30cd8c063?w=800',
+    'https://images.unsplash.com/photo-1551601651-2a8555f1a136?w=800',
+    'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=800',
 ];
 
 function Home() {
@@ -44,8 +43,7 @@ function Home() {
     const [doctors, setDoctors] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    
-    // Состояния для управления отображением карточек
+
     const [showAllDepartments, setShowAllDepartments] = useState(false);
     const [showAllServices, setShowAllServices] = useState(false);
     const [showAllDoctors, setShowAllDoctors] = useState(false);
@@ -95,7 +93,7 @@ function Home() {
 
     return (
         <div>
-            {/* Hero Section */}
+            {}
             <StyledCarousel>
                 <Carousel.Item>
                     <img
@@ -132,7 +130,7 @@ function Home() {
                 </Carousel.Item>
             </StyledCarousel>
 
-            {/* Departments Section */}
+            {}
             <SectionContainer>
                 <StyledContainer>
                     <SectionTitle>Наши Отделения</SectionTitle>
@@ -172,7 +170,7 @@ function Home() {
                 </StyledContainer>
             </SectionContainer>
 
-            {/* Services Section */}
+            {}
             <SectionContainer>
                 <StyledContainer>
                     <SectionTitle>Наши Услуги</SectionTitle>
@@ -180,19 +178,19 @@ function Home() {
                         {(showAllServices ? services : services.slice(0, ITEMS_TO_SHOW)).map((service) => (
                             <StyledCol key={service.id} md={4}>
                                 <ServiceCard>
-                                    {service.photo ? (
+                                {service.photo ? (
                                         <img
                                             className="card-img-top"
                                             src={`${axios.defaults.baseURL}${service.photo}?t=${Date.now()}`}
-                                            alt={service.name}
-                                        />
-                                    ) : (
+                                        alt={service.name}
+                                    />
+                                ) : (
                                         <img
                                             className="card-img-top"
-                                            src="/images/premium_photo-1673953509986-9b2bfe934ae5.png"
-                                            alt={service.name}
-                                        />
-                                    )}
+                                        src="/images/premium_photo-1673953509986-9b2bfe934ae5.png"
+                                        alt={service.name}
+                                    />
+                                )}
                                     <div className="card-body">
                                         <h4 className="card-title">{service.name}</h4>
                                         <PriceTag>{service.price} руб.</PriceTag>
@@ -211,7 +209,7 @@ function Home() {
                 </StyledContainer>
             </SectionContainer>
 
-            {/* Doctors Section */}
+            {}
             <SectionContainer>
                 <StyledContainer>
                     <SectionTitle>Наши Врачи</SectionTitle>
@@ -219,32 +217,32 @@ function Home() {
                         {(showAllDoctors ? doctors : doctors.slice(0, ITEMS_TO_SHOW)).map((doctor) => (
                             <StyledCol key={doctor.id} md={4}>
                                 <DoctorCard>
-                                    {doctor.photo ? (
+                                {doctor.photo ? (
                                         <img
                                             className="card-img-top"
                                             src={`${axios.defaults.baseURL}${doctor.photo}?t=${Date.now()}`}
-                                            alt={`${doctor.firstName} ${doctor.lastName}`}
-                                        />
-                                    ) : (
+                                        alt={`${doctor.firstName} ${doctor.lastName}`}
+                                    />
+                                ) : (
                                         <img
                                             className="card-img-top"
-                                            src="/images/premium_photo-1673953509986-9b2bfe934ae5.png"
-                                            alt={`${doctor.firstName} ${doctor.lastName}`}
-                                        />
-                                    )}
+                                        src="/images/premium_photo-1673953509986-9b2bfe934ae5.png"
+                                        alt={`${doctor.firstName} ${doctor.lastName}`}
+                                    />
+                                )}
                                     <div className="card-body">
                                         <h4 className="card-title">{doctor.firstName} {doctor.lastName}</h4>
                                         <h6 className="card-subtitle">{doctor.specialization}</h6>
                                         <p className="card-text">
-                                            Отделение: {doctor.Department ? doctor.Department.name : 'Не указано'}
+                                        Отделение: {doctor.Department ? doctor.Department.name : 'Не указано'}
                                         </p>
                                         <StyledButton as="a" href={`/doctors/${doctor.id}`} className="mt-auto">
-                                            Подробнее
+                                        Подробнее
                                         </StyledButton>
                                     </div>
                                 </DoctorCard>
                             </StyledCol>
-                        ))}
+                    ))}
                     </StyledRow>
                     {doctors.length > ITEMS_TO_SHOW && (
                         <ShowMoreButtonContainer>
@@ -256,35 +254,35 @@ function Home() {
                 </StyledContainer>
             </SectionContainer>
 
-            {/* Informative Section */}
+            {}
             <InfoSection>
                 <StyledContainer>
-                    <Row className="align-items-center">
-                        <Col md={6}>
+                <Row className="align-items-center">
+                    <Col md={6}>
                             <InfoContent>
-                                <h3>Почему выбирают нас?</h3>
-                                <p>
-                                    Наша клиника предоставляет широкий спектр медицинских услуг на основе современных технологий и инноваций. Мы стремимся обеспечить высокий уровень обслуживания и индивидуальный подход к каждому пациенту.
-                                </p>
-                                <ul>
-                                    <li>Опытные специалисты</li>
-                                    <li>Современное оборудование</li>
-                                    <li>Комфортные условия</li>
-                                    <li>Доступные цены</li>
-                                    <li>Дружелюбный персонал</li>
-                                </ul>
+                        <h3>Почему выбирают нас?</h3>
+                        <p>
+                            Наша клиника предоставляет широкий спектр медицинских услуг на основе современных технологий и инноваций. Мы стремимся обеспечить высокий уровень обслуживания и индивидуальный подход к каждому пациенту.
+                        </p>
+                        <ul>
+                            <li>Опытные специалисты</li>
+                            <li>Современное оборудование</li>
+                            <li>Комфортные условия</li>
+                            <li>Доступные цены</li>
+                            <li>Дружелюбный персонал</li>
+                        </ul>
                                 <SuccessButton as="a" href="/consultant">
                                     Задать вопрос консультанту
                                 </SuccessButton>
                             </InfoContent>
-                        </Col>
-                        <Col md={6}>
+                    </Col>
+                    <Col md={6}>
                             <InfoImage
-                                src="/images/premium_photo-1673953509986-9b2bfe934ae5.png"
-                                alt="Почему выбирают нас"
-                            />
-                        </Col>
-                    </Row>
+                            src="/images/premium_photo-1673953509986-9b2bfe934ae5.png"
+                            alt="Почему выбирают нас"
+                        />
+                    </Col>
+                </Row>
                 </StyledContainer>
             </InfoSection>
         </div>

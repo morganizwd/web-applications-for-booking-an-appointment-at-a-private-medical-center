@@ -1,14 +1,11 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from '../axios';
 
-
-
-
 export const registration = createAsyncThunk(
     'doctor/registration',
     async (formData, { rejectWithValue }) => {
         try {
-            // Преобразуем FormData в объект для нового API
+            
             const data = {
                 login: formData.get('login'),
                 password: formData.get('password'),
@@ -34,7 +31,6 @@ export const registration = createAsyncThunk(
     }
 );
 
-
 export const login = createAsyncThunk(
     'doctor/login',
     async (credentials, { rejectWithValue }) => {
@@ -50,7 +46,6 @@ export const login = createAsyncThunk(
         }
     }
 );
-
 
 export const auth = createAsyncThunk(
     'doctor/auth',
@@ -68,7 +63,6 @@ export const auth = createAsyncThunk(
     }
 );
 
-
 export const fetchAllDoctors = createAsyncThunk(
     'doctor/fetchAllDoctors',
     async (_, { rejectWithValue }) => {
@@ -85,7 +79,6 @@ export const fetchAllDoctors = createAsyncThunk(
     }
 );
 
-
 export const fetchDoctorById = createAsyncThunk(
     'doctor/fetchDoctorById',
     async (doctorId, { rejectWithValue }) => {
@@ -101,7 +94,6 @@ export const fetchDoctorById = createAsyncThunk(
         }
     }
 );
-
 
 export const updateDoctor = createAsyncThunk(
     'doctor/updateDoctor',
@@ -129,7 +121,6 @@ export const updateDoctor = createAsyncThunk(
     }
 );
 
-
 export const deleteDoctor = createAsyncThunk(
     'doctor/deleteDoctor',
     async (doctorId, { rejectWithValue }) => {
@@ -146,14 +137,12 @@ export const deleteDoctor = createAsyncThunk(
     }
 );
 
-
 const initialState = {
     doctor: null,       
     doctors: [],        
     status: 'idle',     
     error: null,
 };
-
 
 const doctorSlice = createSlice({
     name: 'doctor',
@@ -186,7 +175,6 @@ const doctorSlice = createSlice({
                 state.error = action.payload || action.error.message;
             })
 
-            
             .addCase(login.pending, (state) => {
                 state.status = 'loading';
                 state.error = null;
@@ -204,7 +192,6 @@ const doctorSlice = createSlice({
                 state.error = action.payload || action.error.message;
             })
 
-            
             .addCase(auth.pending, (state) => {
                 state.status = 'loading';
                 state.error = null;
@@ -219,7 +206,6 @@ const doctorSlice = createSlice({
                 state.error = action.payload || action.error.message;
             })
 
-            
             .addCase(fetchAllDoctors.pending, (state) => {
                 state.status = 'loading';
                 state.error = null;
@@ -233,7 +219,6 @@ const doctorSlice = createSlice({
                 state.error = action.payload || action.error.message;
             })
 
-            
             .addCase(fetchDoctorById.pending, (state) => {
                 state.status = 'loading';
                 state.error = null;
@@ -253,7 +238,6 @@ const doctorSlice = createSlice({
                 state.error = action.payload || action.error.message;
             })
 
-            
             .addCase(updateDoctor.pending, (state) => {
                 state.status = 'loading';
                 state.error = null;
@@ -272,7 +256,6 @@ const doctorSlice = createSlice({
                 state.error = action.payload || action.error.message;
             })
 
-            
             .addCase(deleteDoctor.pending, (state) => {
                 state.status = 'loading';
                 state.error = null;
@@ -295,7 +278,6 @@ const doctorSlice = createSlice({
     },
 });
 
-
 export const selectIsAuth = (state) => {
     const token = localStorage.getItem('token');
     const role = localStorage.getItem('role');
@@ -305,7 +287,6 @@ export const selectCurrentDoctor = (state) => state.doctor.doctor;
 export const selectAllDoctors = (state) => state.doctor.doctors;
 export const selectDoctorStatus = (state) => state.doctor.status;
 export const selectDoctorError = (state) => state.doctor.error;
-
 
 export const { logout } = doctorSlice.actions;
 export default doctorSlice.reducer;

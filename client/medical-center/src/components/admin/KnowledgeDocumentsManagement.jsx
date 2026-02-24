@@ -18,8 +18,7 @@ function KnowledgeDocumentsManagement() {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
-    
-    // Модальное окно для создания/редактирования
+
     const [showModal, setShowModal] = useState(false);
     const [editingDoc, setEditingDoc] = useState(null);
     const [formData, setFormData] = useState({
@@ -97,11 +96,11 @@ function KnowledgeDocumentsManagement() {
 
         try {
             if (editingDoc) {
-                // Обновление документа
+                
                 await axios.put(`/rag/documents/${editingDoc.id}`, formData);
                 setSuccess('Документ успешно обновлён');
             } else {
-                // Создание документа
+                
                 await axios.post('/rag/documents', formData);
                 setSuccess('Документ успешно создан');
             }
@@ -221,7 +220,7 @@ function KnowledgeDocumentsManagement() {
                 </Card>
             )}
 
-            {/* Модальное окно для создания/редактирования */}
+            {}
             <Modal show={showModal} onHide={handleCloseModal} size="lg">
                 <Modal.Header closeButton>
                     <Modal.Title>

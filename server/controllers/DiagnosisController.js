@@ -14,12 +14,10 @@ class DiagnosisController {
             const userId = req.user.userId;
             const userRole = req.user.primaryRole;
 
-            // Только врачи и администраторы могут создавать диагнозы
             if (userRole !== 'doctor' && userRole !== 'admin') {
                 return res.status(403).json({ message: 'Доступ запрещён' });
             }
 
-            // Получение ID врача
             let finalDoctorId;
             if (userRole === 'doctor') {
                 const doctor = await Doctor.findOne({ where: { userId } });
@@ -28,7 +26,7 @@ class DiagnosisController {
                 }
                 finalDoctorId = doctor.id;
             } else {
-                // Администратор может указать любого врача
+                
                 finalDoctorId = req.body.doctorId;
                 if (!finalDoctorId) {
                     return res.status(400).json({ message: 'ID врача обязателен для администратора' });
@@ -45,7 +43,6 @@ class DiagnosisController {
                 return res.status(404).json({ message: 'Пациент не найден' });
             }
 
-            // Проверка связи с приёмом, если указан
             if (appointmentId) {
                 const appointment = await Appointment.findByPk(appointmentId);
                 if (!appointment) {
@@ -111,7 +108,6 @@ class DiagnosisController {
                 return res.status(404).json({ message: 'Диагностика не найдена' });
             }
 
-            // Проверка прав доступа
             const userId = req.user.userId;
             const userRole = req.user.primaryRole;
 
@@ -142,7 +138,6 @@ class DiagnosisController {
 
             const whereClause = {};
 
-            // Ограничение доступа в зависимости от роли
             if (userRole === 'patient') {
                 const patient = await Patient.findOne({ where: { userId } });
                 if (patient) {
@@ -161,7 +156,7 @@ class DiagnosisController {
                     return res.json([]);
                 }
             } else if (userRole === 'admin') {
-                // Администратор видит все диагнозы, но может фильтровать
+                
                 if (patientId) {
                     whereClause.patientId = patientId;
                 }
@@ -214,7 +209,6 @@ class DiagnosisController {
                 return res.status(404).json({ message: 'Диагностика не найдена' });
             }
 
-            // Проверка прав доступа
             if (userRole === 'doctor') {
                 const doctor = await Doctor.findOne({ where: { userId } });
                 if (!doctor || diagnosis.doctorId !== doctor.id) {
@@ -264,7 +258,6 @@ class DiagnosisController {
                 return res.status(404).json({ message: 'Диагностика не найдена' });
             }
 
-            // Проверка прав доступа
             if (userRole === 'doctor') {
                 const doctor = await Doctor.findOne({ where: { userId } });
                 if (!doctor || diagnosis.doctorId !== doctor.id) {

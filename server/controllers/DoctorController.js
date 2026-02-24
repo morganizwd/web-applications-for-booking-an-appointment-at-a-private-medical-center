@@ -145,7 +145,6 @@ class DoctorController {
         }
     }
 
-    
     async findAll(req, res) {
         try {
             const doctors = await Doctor.findAll({
@@ -162,24 +161,20 @@ class DoctorController {
         }
     }
 
-
     async update(req, res) {
         try {
             const { login, password, firstName, lastName, specialization, departmentId } = req.body;
             const doctorId = req.params.id;
 
-            // Проверка прав: только сам врач или админ может обновлять профиль
-            // Проверяем админа через primaryRole или через массив roles
             const isAdmin = req.user.primaryRole === 'admin' || 
                           (Array.isArray(req.user.roles) && req.user.roles.includes('admin')) ||
                           (typeof req.user.roles === 'string' && req.user.roles === 'admin');
-            
-            // Проверяем, является ли пользователь врачом и обновляет ли свой профиль
+
             let isOwnProfile = false;
             if (req.user.doctorId) {
                 isOwnProfile = req.user.doctorId === parseInt(doctorId, 10);
             } else if (!isAdmin) {
-                // Если не админ и нет doctorId, проверяем через User -> Doctor связь
+                
                 const doctor = await Doctor.findOne({ where: { userId: req.user.userId } });
                 if (doctor) {
                     isOwnProfile = doctor.id === parseInt(doctorId, 10);
@@ -226,7 +221,6 @@ class DoctorController {
                 fs.writeFileSync(path.join(uploadDir, filename), req.file.buffer);
                 updatedData.photo = photoPath;
 
-                // Удаляем старое фото, если оно существует
                 if (doctor.photo) {
                     const oldPhotoPath = path.join(__dirname, '..', doctor.photo);
                     if (fs.existsSync(oldPhotoPath)) {
@@ -237,7 +231,6 @@ class DoctorController {
 
             await doctor.update(updatedData);
 
-            // Загружаем обновленного врача с отделением
             const updatedDoctor = await Doctor.findByPk(doctorId, {
                 include: [{ model: Department, attributes: ['id', 'name'] }]
             });

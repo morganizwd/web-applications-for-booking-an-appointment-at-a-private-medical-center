@@ -11,7 +11,6 @@ class DoctorScheduleController {
 
             const { doctorId, dayOfWeek, startTime, endTime } = req.body;
 
-            
             if (dayOfWeek < 1 || dayOfWeek > 5) {
                 return res.status(400).json({ message: 'День недели должен быть с 1 (Понедельник) по 5 (Пятница)' });
             }

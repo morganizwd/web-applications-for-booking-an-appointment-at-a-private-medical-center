@@ -6,7 +6,7 @@ const { sequelize, User, Role, UserRole, Patient, Doctor, Department, Service, D
 
 async function seedDatabase() {
     try {
-        // Проверка переменных окружения
+        
         console.log('Проверка подключения к базе данных...');
         console.log('DB_HOST:', process.env.DB_HOST || 'localhost');
         console.log('DB_PORT:', process.env.DB_PORT || 5432);
@@ -20,9 +20,6 @@ async function seedDatabase() {
         const passwordHash = await bcrypt.hash('password123', 10);
         console.log('Хеш пароля сгенерирован:', passwordHash);
 
-        // ============================================
-        // 1. ОТДЕЛЕНИЯ
-        // ============================================
         const departments = await Department.bulkCreate([
             { name: 'Терапия', description: 'Общая терапия и консультации' },
             { name: 'Кардиология', description: 'Диагностика и лечение заболеваний сердечно-сосудистой системы' },
@@ -42,18 +39,12 @@ async function seedDatabase() {
         ], { ignoreDuplicates: true });
         console.log(`Создано отделений: ${departments.length}`);
 
-        // ============================================
-        // 2. ПОЛЬЗОВАТЕЛИ - Администраторы
-        // ============================================
         const adminUsers = await User.bulkCreate([
             { login: 'admin', password: passwordHash, email: 'admin@clinic.ru', isActive: true },
             { login: 'admin2', password: passwordHash, email: 'admin2@clinic.ru', isActive: true },
         ], { ignoreDuplicates: true });
         console.log(`Создано администраторов: ${adminUsers.length}`);
 
-        // ============================================
-        // 3. ПОЛЬЗОВАТЕЛИ - Врачи
-        // ============================================
         const doctorUsers = await User.bulkCreate([
             { login: 'doctor1', password: passwordHash, email: 'petrov@clinic.ru', isActive: true },
             { login: 'doctor2', password: passwordHash, email: 'ivanova@clinic.ru', isActive: true },
@@ -73,9 +64,6 @@ async function seedDatabase() {
         ], { ignoreDuplicates: true });
         console.log(`Создано врачей: ${doctorUsers.length}`);
 
-        // ============================================
-        // 4. ПОЛЬЗОВАТЕЛИ - Пациенты
-        // ============================================
         const patientUsersData = [];
         for (let i = 1; i <= 30; i++) {
             patientUsersData.push({
@@ -88,39 +76,29 @@ async function seedDatabase() {
         const patientUsers = await User.bulkCreate(patientUsersData, { ignoreDuplicates: true });
         console.log(`Создано пациентов: ${patientUsers.length}`);
 
-        // ============================================
-        // 5. РОЛИ
-        // ============================================
         const [adminRole] = await Role.findOrCreate({ where: { name: 'admin' }, defaults: { description: 'Администратор системы' } });
         const [doctorRole] = await Role.findOrCreate({ where: { name: 'doctor' }, defaults: { description: 'Врач' } });
         const [patientRole] = await Role.findOrCreate({ where: { name: 'patient' }, defaults: { description: 'Пациент' } });
         console.log('Роли проверены/созданы');
 
-        // ============================================
-        // 6. СВЯЗИ ПОЛЬЗОВАТЕЛЕЙ И РОЛЕЙ
-        // ============================================
-        // Получаем всех пользователей из базы (на случай, если они уже существовали)
         const allAdminUsers = await User.findAll({ where: { login: ['admin', 'admin2'] } });
         const allDoctorUsers = await User.findAll({ where: { login: { [Op.like]: 'doctor%' } } });
         const allPatientUsers = await User.findAll({ where: { login: { [Op.like]: 'patient%' } } });
         
         const userRoles = [];
-        
-        // Администраторы
+
         for (const admin of allAdminUsers) {
             if (admin && admin.id) {
                 userRoles.push({ userId: admin.id, roleId: adminRole.id });
             }
         }
-        
-        // Врачи
+
         for (const doctor of allDoctorUsers) {
             if (doctor && doctor.id) {
                 userRoles.push({ userId: doctor.id, roleId: doctorRole.id });
             }
         }
-        
-        // Пациенты
+
         for (const patient of allPatientUsers) {
             if (patient && patient.id) {
                 userRoles.push({ userId: patient.id, roleId: patientRole.id });
@@ -130,10 +108,6 @@ async function seedDatabase() {
         await UserRole.bulkCreate(userRoles, { ignoreDuplicates: true });
         console.log(`Создано связей пользователей и ролей: ${userRoles.length}`);
 
-        // ============================================
-        // 7. ПРОФИЛИ ВРАЧЕЙ
-        // ============================================
-        // Получаем всех врачей из базы, отсортированных по логину
         const allDoctorsFromDB = await User.findAll({ 
             where: { login: { [Op.like]: 'doctor%' } },
             order: [['login', 'ASC']]
@@ -155,15 +129,11 @@ async function seedDatabase() {
             { userId: allDoctorsFromDB[12]?.id, firstName: 'Анна', lastName: 'Новикова', specialization: 'Терапевт', departmentId: 1 },
             { userId: allDoctorsFromDB[13]?.id, firstName: 'Павел', lastName: 'Морозов', specialization: 'Кардиолог', departmentId: 2 },
             { userId: allDoctorsFromDB[14]?.id, firstName: 'Юлия', lastName: 'Петрова', specialization: 'Невролог', departmentId: 3 },
-        ].filter(d => d.userId); // Фильтруем записи без userId
+        ].filter(d => d.userId); 
         
         const doctors = await Doctor.bulkCreate(doctorsData, { ignoreDuplicates: true });
         console.log(`Создано профилей врачей: ${doctors.length}`);
 
-        // ============================================
-        // 8. ПРОФИЛИ ПАЦИЕНТОВ
-        // ============================================
-        // Получаем всех пациентов из базы, отсортированных по логину
         const allPatientsFromDB = await User.findAll({ 
             where: { login: { [Op.like]: 'patient%' } },
             order: [['login', 'ASC']]
@@ -180,69 +150,66 @@ async function seedDatabase() {
             phoneNumber: `+7 (9${String(index + 1).padStart(2, '0')}) ${Math.floor(Math.random() * 900 + 100)}-${Math.floor(Math.random() * 90 + 10)}-${Math.floor(Math.random() * 90 + 10)}`,
             address: `г. Москва, ул. ${streets[index % streets.length]}, д. ${Math.floor(Math.random() * 30 + 1)}, кв. ${Math.floor(Math.random() * 100 + 1)}`,
             age: Math.floor(Math.random() * 60 + 18),
-        })).filter(p => p.userId); // Фильтруем записи без userId
+        })).filter(p => p.userId); 
         
         const patients = await Patient.bulkCreate(patientsData, { ignoreDuplicates: true });
         console.log(`Создано профилей пациентов: ${patients.length}`);
 
-        // ============================================
-        // 9. УСЛУГИ
-        // ============================================
         const servicesData = [
-            // Терапия
+            
             { name: 'Консультация терапевта', price: 1500, duration: 30, description: 'Первичная консультация терапевта с осмотром и сбором анамнеза', departmentId: 1 },
             { name: 'Повторная консультация терапевта', price: 1200, duration: 20, description: 'Повторный приём терапевта', departmentId: 1 },
             { name: 'Профилактический осмотр', price: 2000, duration: 45, description: 'Полный профилактический осмотр', departmentId: 1 },
-            // Кардиология
+            
             { name: 'Консультация кардиолога', price: 2500, duration: 40, description: 'Консультация кардиолога с ЭКГ', departmentId: 2 },
             { name: 'ЭКГ с расшифровкой', price: 1500, duration: 20, description: 'Электрокардиограмма с расшифровкой', departmentId: 2 },
             { name: 'Суточное мониторирование ЭКГ', price: 3500, duration: 5, description: 'Холтеровское мониторирование ЭКГ на 24 часа', departmentId: 2 },
             { name: 'Эхокардиография', price: 3000, duration: 30, description: 'УЗИ сердца', departmentId: 2 },
-            // Неврология
+            
             { name: 'Консультация невролога', price: 2200, duration: 40, description: 'Консультация невролога с неврологическим осмотром', departmentId: 3 },
             { name: 'ЭЭГ (электроэнцефалография)', price: 2500, duration: 30, description: 'Электроэнцефалография головного мозга', departmentId: 3 },
             { name: 'УЗИ сосудов головы и шеи', price: 2800, duration: 30, description: 'Допплерография сосудов', departmentId: 3 },
-            // Гастроэнтерология
+            
             { name: 'Консультация гастроэнтеролога', price: 2300, duration: 40, description: 'Консультация гастроэнтеролога', departmentId: 4 },
             { name: 'ФГДС (гастроскопия)', price: 3500, duration: 20, description: 'Фиброгастродуоденоскопия', departmentId: 4 },
             { name: 'Колоноскопия', price: 5000, duration: 40, description: 'Эндоскопическое исследование толстого кишечника', departmentId: 4 },
-            // Эндокринология
+            
             { name: 'Консультация эндокринолога', price: 2400, duration: 40, description: 'Консультация эндокринолога', departmentId: 5 },
             { name: 'УЗИ щитовидной железы', price: 1800, duration: 20, description: 'Ультразвуковое исследование щитовидной железы', departmentId: 5 },
-            // Офтальмология
+            
             { name: 'Консультация офтальмолога', price: 2000, duration: 30, description: 'Консультация офтальмолога с проверкой зрения', departmentId: 6 },
             { name: 'Подбор очков', price: 1500, duration: 30, description: 'Подбор очков и рецепта', departmentId: 6 },
             { name: 'Осмотр глазного дна', price: 1800, duration: 20, description: 'Офтальмоскопия', departmentId: 6 },
-            // Отоларингология
+            
             { name: 'Консультация ЛОР-врача', price: 2000, duration: 30, description: 'Консультация отоларинголога', departmentId: 7 },
             { name: 'Аудиометрия', price: 1500, duration: 20, description: 'Исследование слуха', departmentId: 7 },
-            // Дерматология
+            
             { name: 'Консультация дерматолога', price: 2000, duration: 30, description: 'Консультация дерматолога', departmentId: 8 },
             { name: 'Удаление родинки', price: 3000, duration: 15, description: 'Удаление доброкачественного образования', departmentId: 8 },
-            // Урология
+            
             { name: 'Консультация уролога', price: 2200, duration: 30, description: 'Консультация уролога', departmentId: 9 },
             { name: 'УЗИ почек и мочевого пузыря', price: 2000, duration: 20, description: 'Ультразвуковое исследование', departmentId: 9 },
-            // Гинекология
+            
             { name: 'Консультация гинеколога', price: 2000, duration: 30, description: 'Консультация гинеколога', departmentId: 10 },
             { name: 'УЗИ органов малого таза', price: 2200, duration: 20, description: 'Ультразвуковое исследование', departmentId: 10 },
             { name: 'Кольпоскопия', price: 2500, duration: 20, description: 'Исследование шейки матки', departmentId: 10 },
-            // Педиатрия
+            
             { name: 'Консультация педиатра', price: 1800, duration: 30, description: 'Консультация педиатра', departmentId: 11 },
             { name: 'Вакцинация', price: 1500, duration: 15, description: 'Проведение вакцинации', departmentId: 11 },
-            // Хирургия
+            
             { name: 'Консультация хирурга', price: 2200, duration: 30, description: 'Консультация хирурга', departmentId: 12 },
             { name: 'Удаление аппендикса', price: 25000, duration: 60, description: 'Аппендэктомия', departmentId: 12 },
-            // Лабораторная диагностика
+            
             { name: 'Общий анализ крови', price: 800, duration: 5, description: 'Клинический анализ крови', departmentId: 13 },
             { name: 'Биохимический анализ крови', price: 2000, duration: 5, description: 'Биохимия крови (базовый)', departmentId: 13 },
             { name: 'Общий анализ мочи', price: 500, duration: 5, description: 'Клинический анализ мочи', departmentId: 13 },
             { name: 'Анализ на гормоны', price: 2500, duration: 5, description: 'Исследование гормонального фона', departmentId: 13 },
             { name: 'Анализ на онкомаркеры', price: 3500, duration: 5, description: 'Исследование онкомаркеров', departmentId: 13 },
-            // УЗИ диагностика
+            
             { name: 'УЗИ брюшной полости', price: 2500, duration: 30, description: 'УЗИ органов брюшной полости', departmentId: 14 },
             { name: 'УЗИ молочных желез', price: 2200, duration: 20, description: 'УЗИ молочных желез', departmentId: 14 },
             { name: 'УЗИ предстательной железы', price: 2000, duration: 20, description: 'ТРУЗИ простаты', departmentId: 14 },
-            // Рентгенология
+            
             { name: 'Рентген грудной клетки', price: 1500, duration: 10, description: 'Рентгенография органов грудной клетки', departmentId: 15 },
             { name: 'Рентген позвоночника', price: 2000, duration: 15, description: 'Рентгенография позвоночника', departmentId: 15 },
             { name: 'КТ головного мозга', price: 5000, duration: 30, description: 'Компьютерная томография', departmentId: 15 },
@@ -251,12 +218,9 @@ async function seedDatabase() {
         const services = await Service.bulkCreate(servicesData, { ignoreDuplicates: true });
         console.log(`Создано услуг: ${services.length}`);
 
-        // ============================================
-        // 10. РАСПИСАНИЕ ВРАЧЕЙ
-        // ============================================
         const schedulesData = [];
         for (const doctor of doctors) {
-            for (let day = 1; day <= 5; day++) { // Понедельник-пятница
+            for (let day = 1; day <= 5; day++) { 
                 schedulesData.push({
                     doctorId: doctor.id,
                     dayOfWeek: day,
@@ -268,9 +232,6 @@ async function seedDatabase() {
         const schedules = await DoctorSchedule.bulkCreate(schedulesData, { ignoreDuplicates: true });
         console.log(`Создано расписаний: ${schedules.length}`);
 
-        // ============================================
-        // 11. ЗАПИСИ НА ПРИЁМ
-        // ============================================
         const appointmentsData = [];
         const statuses = ['scheduled', 'confirmed', 'completed', 'cancelled', 'no_show'];
         const notes = ['Повторный приём', 'Первичный приём', 'Профилактический осмотр', null];
@@ -300,9 +261,6 @@ async function seedDatabase() {
         const appointments = await Appointment.bulkCreate(appointmentsData, { ignoreDuplicates: true });
         console.log(`Создано записей на приём: ${appointments.length}`);
 
-        // ============================================
-        // 12. ДИАГНОЗЫ
-        // ============================================
         const diagnosisNames = [
             'Гипертоническая болезнь', 'Сахарный диабет 2 типа', 'Остеохондроз позвоночника',
             'Гастрит', 'Бронхит', 'Пневмония', 'Ангина', 'Гипотиреоз', 'Аритмия', 'Мигрень',
@@ -320,8 +278,7 @@ async function seedDatabase() {
         for (let i = 0; i < 150; i++) {
             const patient = patients[Math.floor(Math.random() * patients.length)];
             const doctor = doctors[Math.floor(Math.random() * doctors.length)];
-            
-            // Находим случайную запись для этого пациента и врача
+
             const appointment = appointments.find(a => a.patientId === patient.id && a.doctorId === doctor.id);
             
             diagnosesData.push({
@@ -335,9 +292,6 @@ async function seedDatabase() {
         const diagnoses = await Diagnosis.bulkCreate(diagnosesData, { ignoreDuplicates: true });
         console.log(`Создано диагнозов: ${diagnoses.length}`);
 
-        // ============================================
-        // 13. ДОКУМЕНТЫ БАЗЫ ЗНАНИЙ
-        // ============================================
         const adminUser = await User.findOne({ where: { login: 'admin' } });
         const bloodTestService = await Service.findOne({ where: { name: 'Общий анализ крови' } });
         const fgdsService = await Service.findOne({ where: { name: 'ФГДС (гастроскопия)' } });
@@ -411,9 +365,6 @@ async function seedDatabase() {
         ], { ignoreDuplicates: true });
         console.log(`Создано документов базы знаний: ${knowledgeDocs.length}`);
 
-        // ============================================
-        // 14. ОТЧЁТЫ
-        // ============================================
         const reportTypes = ['appointments', 'diagnoses', 'patients', 'doctors', 'services', 'schedule'];
         const formats = ['excel', 'word'];
         const reportStatuses = ['pending', 'processing', 'completed', 'failed'];
@@ -434,9 +385,6 @@ async function seedDatabase() {
         const reports = await ReportJob.bulkCreate(reportsData, { ignoreDuplicates: true });
         console.log(`Создано заданий на отчёты: ${reports.length}`);
 
-        // ============================================
-        // ИТОГОВАЯ СТАТИСТИКА
-        // ============================================
         console.log('\n=== ИТОГОВАЯ СТАТИСТИКА ===');
         console.log(`Пользователей: ${await User.count()}`);
         console.log(`Пациентов: ${await Patient.count()}`);

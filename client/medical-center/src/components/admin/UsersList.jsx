@@ -24,7 +24,6 @@ function AdminDashboard() {
     const [doctorsError, setDoctorsError] = useState('');
     const [patientsError, setPatientsError] = useState('');
 
-    // Состояния для редактирования врача
     const [showEditDoctorModal, setShowEditDoctorModal] = useState(false);
     const [editingDoctor, setEditingDoctor] = useState(null);
     const [editDoctorData, setEditDoctorData] = useState({
@@ -37,7 +36,6 @@ function AdminDashboard() {
     const [editDoctorPhotoPreview, setEditDoctorPhotoPreview] = useState(null);
     const [departments, setDepartments] = useState([]);
 
-    
     useEffect(() => {
         fetchDoctors();
         fetchPatients();
@@ -107,7 +105,6 @@ function AdminDashboard() {
         }
     };
 
-    
     const exportToExcel = (data, headers, filename) => {
         const worksheet = XLSX.utils.json_to_sheet(data, { header: headers });
         const workbook = XLSX.utils.book_new();
@@ -117,7 +114,6 @@ function AdminDashboard() {
         saveAs(dataBlob, `${filename}.xlsx`);
     };
 
-    
     const exportToWord = (data, headers, filename) => {
         try {
             
@@ -144,7 +140,6 @@ function AdminDashboard() {
                 </table>
             `;
 
-            
             const htmlContent = `
                 <html>
                     <head>
@@ -158,7 +153,6 @@ function AdminDashboard() {
                 </html>
             `;
 
-            
             const blob = new Blob([htmlContent], {
                 type: 'application/msword;charset=utf-8',
             });
@@ -181,7 +175,7 @@ function AdminDashboard() {
         <Container className="mt-5">
             <h2>Admin Dashboard</h2>
 
-            {/* Секция врачей */}
+            {}
             <hr className="my-4" />
             <Row className="align-items-center mb-3">
                 <Col>
@@ -302,7 +296,7 @@ function AdminDashboard() {
                 </Table>
             )}
 
-            {/* Секция пациентов */}
+            {}
             <hr className="my-4" />
             <Row className="align-items-center mb-3">
                 <Col>
@@ -395,7 +389,7 @@ function AdminDashboard() {
                 </Table>
             )}
 
-            {/* Модальное окно редактирования врача */}
+            {}
             <Modal show={showEditDoctorModal} onHide={() => {
                 setShowEditDoctorModal(false);
                 setEditingDoctor(null);

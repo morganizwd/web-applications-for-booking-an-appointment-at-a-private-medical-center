@@ -1,4 +1,4 @@
-// src/components/DoctorDashboard.jsx
+
 
 import React, { useEffect, useState } from 'react';
 import {
@@ -14,13 +14,13 @@ import {
     Image,
     Modal,
 } from 'react-bootstrap';
-import axios from '../../redux/axios'; // Настроенный экземпляр axios
+import axios from '../../redux/axios'; 
 import { format } from 'date-fns';
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
 
 function DoctorDashboard() {
-    // Определение состояния
+
     const [doctor, setDoctor] = useState(null);
     const [loadingDoctor, setLoadingDoctor] = useState(true);
     const [doctorError, setDoctorError] = useState('');
@@ -56,7 +56,6 @@ function DoctorDashboard() {
     const [loadingDiagnoses, setLoadingDiagnoses] = useState(true);
     const [diagnosesError, setDiagnosesError] = useState('');
 
-    // --- Состояния для редактирования диагноза ---
     const [showEditDiagnosisModal, setShowEditDiagnosisModal] = useState(false);
     const [diagnosisToEdit, setDiagnosisToEdit] = useState(null);
     const [editDiagnosisData, setEditDiagnosisData] = useState({
@@ -67,13 +66,11 @@ function DoctorDashboard() {
     const [editDiagnosisSuccess, setEditDiagnosisSuccess] = useState('');
     const [editLoading, setEditLoading] = useState(false);
 
-    // --- Состояния для удаления диагноза ---
     const [showDeleteDiagnosisModal, setShowDeleteDiagnosisModal] = useState(false);
     const [diagnosisToDelete, setDiagnosisToDelete] = useState(null);
     const [deleteDiagnosisError, setDeleteDiagnosisError] = useState('');
     const [deleteDiagnosisLoading, setDeleteDiagnosisLoading] = useState(false);
 
-    // Получение данных доктора
     useEffect(() => {
         const fetchDoctor = async () => {
             try {
@@ -112,13 +109,12 @@ function DoctorDashboard() {
         fetchSchedules();
     }, []);
 
-    // Получение записей и диагнозов после загрузки доктора
     useEffect(() => {
         if (doctor) {
             fetchAppointments(doctor.id);
             fetchDiagnoses();
         }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
+
     }, [doctor]);
 
     const fetchAppointments = async (doctorId) => {
@@ -147,12 +143,10 @@ function DoctorDashboard() {
         }
     };
 
-    // Фильтрация расписаний для текущего доктора
     const mySchedules = doctor
         ? allSchedules.filter((s) => s.doctorId === doctor.id)
         : [];
 
-    // Обработка изменений формы
     const handleInputChange = (e) => {
         const { name, value } = e.target;
         setFormData((prev) => ({ ...prev, [name]: value }));
@@ -177,7 +171,6 @@ function DoctorDashboard() {
         }
     };
 
-    // Обновление профиля
     const handleUpdateProfile = async (e) => {
         e.preventDefault();
         setUpdateError('');
@@ -215,7 +208,6 @@ function DoctorDashboard() {
         }
     };
 
-    // Обработчики модального окна диагноза
     const handleShowDiagnosisModal = (appointment) => {
         setSelectedAppointment(appointment);
         setDiagnosisData({ name: '', conclusion: '' });
@@ -275,7 +267,6 @@ function DoctorDashboard() {
         }
     };
 
-    // Экспорт в Excel
     const exportTableToExcel = (data, headers, filename) => {
         const worksheet = XLSX.utils.json_to_sheet(data, { header: headers });
         const workbook = XLSX.utils.book_new();
@@ -285,10 +276,9 @@ function DoctorDashboard() {
         saveAs(dataBlob, `${filename}.xlsx`);
     };
 
-    // Экспорт в Word (HTML-метод)
     const exportTableToWord = (data, headers, filename) => {
         try {
-            // Создаём HTML-таблицу
+
             let tableHTML = `
                 <table border="1" style="border-collapse: collapse; width: 100%;">
                     <thead>
@@ -312,7 +302,6 @@ function DoctorDashboard() {
                 </table>
             `;
 
-            // Оборачиваем таблицу в базовый HTML
             const htmlContent = `
                 <html>
                     <head>
@@ -326,7 +315,6 @@ function DoctorDashboard() {
                 </html>
             `;
 
-            // Создаём Blob с типом "application/msword"
             const blob = new Blob([htmlContent], {
                 type: 'application/msword;charset=utf-8',
             });
@@ -345,7 +333,6 @@ function DoctorDashboard() {
         }
     };
 
-    // Обработчики экспорта для расписаний
     const handleExportSchedulesExcel = () => {
         const data = mySchedules.map((s) => ({
             ID: s.id,
@@ -384,7 +371,6 @@ function DoctorDashboard() {
         exportTableToWord(data, headers, 'Doctor_Schedules');
     };
 
-    // Обработчики экспорта для записей
     const handleExportAppointmentsExcel = () => {
         const data = appointments.map((a) => ({
             ID: a.id,
@@ -407,7 +393,6 @@ function DoctorDashboard() {
         exportTableToWord(data, headers, 'Doctor_Appointments');
     };
 
-    // Обработчики экспорта для диагнозов
     const handleExportDiagnosesExcel = () => {
         const data = diagnoses.map((d) => ({
             ID: d.id,
@@ -432,7 +417,6 @@ function DoctorDashboard() {
         exportTableToWord(data, headers, 'Doctor_Diagnoses');
     };
 
-    // Функции для редактирования диагноза
     const handleEditDiagnosisClick = (diagnosis) => {
         setDiagnosisToEdit(diagnosis);
         setEditDiagnosisData({
@@ -458,7 +442,7 @@ function DoctorDashboard() {
         try {
             const res = await axios.put(`/diagnoses/${diagnosisToEdit.id}`, editDiagnosisData);
             setEditDiagnosisSuccess('Диагноз успешно обновлен.');
-            // Обновляем диагнозы в состоянии
+
             setDiagnoses((prevDiagnoses) =>
                 prevDiagnoses.map((diag) =>
                     diag.id === diagnosisToEdit.id ? res.data : diag
@@ -486,7 +470,6 @@ function DoctorDashboard() {
         setEditDiagnosisError('');
     };
 
-    // Функции для удаления диагноза
     const handleDeleteDiagnosisClick = (diagnosis) => {
         setDiagnosisToDelete(diagnosis);
         setShowDeleteDiagnosisModal(true);
@@ -501,7 +484,7 @@ function DoctorDashboard() {
 
         try {
             await axios.delete(`/diagnoses/${diagnosisToDelete.id}`);
-            // Удаляем диагноз из состояния
+
             setDiagnoses((prevDiagnoses) =>
                 prevDiagnoses.filter((diag) => diag.id !== diagnosisToDelete.id)
             );
@@ -523,10 +506,10 @@ function DoctorDashboard() {
     };
 
     return (
+        <>
         <Container className="mt-5">
             <h2>Doctor's Dashboard</h2>
 
-            {/* Секция информации о докторе */}
             {loadingDoctor ? (
                 <Spinner animation="border" role="status">
                     <span className="visually-hidden">Loading doctor info...</span>
@@ -617,21 +600,18 @@ function DoctorDashboard() {
                                         <Form.Control
                                             type="file"
                                             accept="image/*"
-                                            onChange={handlePhotoChange}
+                                            onChange={(e) => setFormData({ ...formData, photo: e.target.files[0] })}
                                         />
                                     </Form.Group>
-
-                                    <Button variant="primary" type="submit">
-                                        Save
-                                    </Button>
                                 </Form>
                             </Card.Body>
                         </Card>
                     </Col>
                 </Row>
             ) : null}
+        </Container>
 
-            {/* Секция расписаний */}
+        <Container>
             <hr className="my-4" />
             <Row className="align-items-center mb-3">
                 <Col>
@@ -700,7 +680,7 @@ function DoctorDashboard() {
                 </Table>
             )}
 
-            {/* Секция записей */}
+            {}
             <hr className="my-4" />
             <Row className="align-items-center mb-3">
                 <Col>
@@ -761,7 +741,7 @@ function DoctorDashboard() {
                                         >
                                             Add Diagnosis
                                         </Button>
-                                        {/* Дополнительные действия можно добавить здесь */}
+                                        {}
                                     </td>
                                 </tr>
                             ))
@@ -770,7 +750,7 @@ function DoctorDashboard() {
                 </Table>
             )}
 
-            {/* Секция диагнозов */}
+            {}
             <hr className="my-4" />
             <Row className="align-items-center mb-3">
                 <Col>
@@ -848,7 +828,7 @@ function DoctorDashboard() {
                 </Table>
             )}
 
-            {/* Модальное окно диагноза */}
+            {}
             <Modal show={showDiagnosisModal} onHide={handleCloseDiagnosisModal}>
                 <Modal.Header closeButton>
                     <Modal.Title>Add Diagnosis</Modal.Title>
@@ -890,7 +870,7 @@ function DoctorDashboard() {
                 </Modal.Body>
             </Modal>
 
-            {/* Модальное окно редактирования диагноза */}
+            {}
             <Modal show={showEditDiagnosisModal} onHide={handleEditDiagnosisCancel}>
                 <Modal.Header closeButton>
                     <Modal.Title>Edit Diagnosis</Modal.Title>
@@ -940,7 +920,7 @@ function DoctorDashboard() {
                 </Modal.Body>
             </Modal>
 
-            {/* Модальное окно подтверждения удаления диагноза */}
+            {}
             <Modal show={showDeleteDiagnosisModal} onHide={handleCancelDeleteDiagnosis}>
                 <Modal.Header closeButton>
                     <Modal.Title>Confirm Delete Diagnosis</Modal.Title>
@@ -968,6 +948,7 @@ function DoctorDashboard() {
                 </Modal.Footer>
             </Modal>
         </Container>
+        </>
     );
 }
 

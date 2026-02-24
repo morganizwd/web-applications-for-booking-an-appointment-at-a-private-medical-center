@@ -4,7 +4,6 @@ const multer = require('multer');
 const fs = require('fs');
 const path = require('path');
 
-// Настройка multer для загрузки файлов
 const storage = multer.memoryStorage();
 const upload = multer({ storage });
 
@@ -42,7 +41,6 @@ class RAGController {
 
             let content = '';
 
-            // Если загружен файл
             if (req.file) {
                 content = req.file.buffer.toString('utf-8');
             } else if (req.body.content) {
@@ -138,17 +136,15 @@ class RAGController {
                 return res.status(404).json({ message: 'Документ не найден' });
             }
 
-            // Пересоздаём фрагменты и embeddings для обновлённого документа
             const updatedDocument = await ragService.uploadDocument(
                 title,
                 content,
                 documentType || document.documentType,
                 serviceId || null,
                 userId,
-                document.id // Передаём ID для обновления существующего документа
+                document.id 
             );
 
-            // Обновляем документ после пересоздания фрагментов
             await updatedDocument.reload();
 
             res.json({
@@ -190,7 +186,6 @@ class RAGController {
             const { Sequelize } = require('sequelize');
             const sequelize = KnowledgeDocument.sequelize;
 
-            // Получаем уникальные serviceId из активных документов через SQL запрос
             const querySQL = `
                 SELECT DISTINCT "serviceId"
                 FROM "KnowledgeDocuments"
@@ -201,15 +196,12 @@ class RAGController {
                 type: Sequelize.QueryTypes.SELECT,
             });
 
-            // Извлекаем serviceId из результатов
             const serviceIds = results.map(row => row.serviceId);
 
-            // Если нет услуг с документами, возвращаем пустой массив
             if (serviceIds.length === 0) {
                 return res.json([]);
             }
 
-            // Получаем услуги по найденным ID
             const services = await Service.findAll({
                 where: {
                     id: serviceIds,
@@ -225,7 +217,6 @@ class RAGController {
         }
     }
 
-    // Middleware для загрузки файлов
     uploadMiddleware() {
         return upload.single('file');
     }

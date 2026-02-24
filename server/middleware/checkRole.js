@@ -7,7 +7,6 @@ module.exports = (...allowedRoles) => {
         const userRoles = req.user.roles || [];
         const primaryRole = req.user.primaryRole;
 
-        // Проверка наличия хотя бы одной из разрешённых ролей
         const hasRole = allowedRoles.some(role => 
             userRoles.includes(role) || primaryRole === role
         );

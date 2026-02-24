@@ -3,7 +3,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from '../../redux/axios'; 
 
-
 import {
     TextField,
     Button,
@@ -25,7 +24,6 @@ import {
     CircularProgress,
     Box,
 } from '@mui/material';
-
 
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -51,11 +49,9 @@ function DepartmentManagement() {
     
     const [success, setSuccess] = useState('');
 
-    
     const [openEditDialog, setOpenEditDialog] = useState(false);
     const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
 
-    
     const fetchDepartments = async () => {
         setLoading(true);
         setError('');
@@ -72,12 +68,10 @@ function DepartmentManagement() {
         }
     };
 
-    
     useEffect(() => {
         fetchDepartments();
     }, []);
 
-    
     const handleCreateDepartment = async (e) => {
         e.preventDefault();
         setError('');
@@ -114,7 +108,6 @@ function DepartmentManagement() {
         }
     };
 
-    
     const handleOpenEditDialog = (dept) => {
         setEditDeptId(dept.id);
         setEditDeptName(dept.name);
@@ -123,7 +116,6 @@ function DepartmentManagement() {
         setOpenEditDialog(true);
     };
 
-    
     const handleCloseEditDialog = () => {
         setOpenEditDialog(false);
         setEditDeptId(null);
@@ -132,7 +124,6 @@ function DepartmentManagement() {
         setEditDeptPhotoPreview(null);
     };
 
-    
     const handleUpdateDepartment = async () => {
         if (!editDeptName.trim()) {
             setError('Название отдела не может быть пустым');
@@ -165,19 +156,16 @@ function DepartmentManagement() {
         }
     };
 
-    
     const handleOpenDeleteDialog = (deptId) => {
         setDeleteDeptId(deptId);
         setOpenDeleteDialog(true);
     };
 
-    
     const handleCloseDeleteDialog = () => {
         setOpenDeleteDialog(false);
         setDeleteDeptId(null);
     };
 
-    
     const handleDeleteDepartment = async () => {
         setLoading(true);
         try {
@@ -201,11 +189,11 @@ function DepartmentManagement() {
                 Управление Отделениями
             </Typography>
 
-            {/* Отображение ошибок и успехов */}
+            {}
             {error && <Alert severity="error" className="mb-3">{error}</Alert>}
             {success && <Alert severity="success" className="mb-3">{success}</Alert>}
 
-            {/* Форма создания нового отделения */}
+            {}
             <form onSubmit={handleCreateDepartment} className="mb-5">
                 <Typography variant="h6" gutterBottom>
                     Создать Новое Отделение
@@ -222,43 +210,16 @@ function DepartmentManagement() {
                     <div>
                         <input
                             accept="image/*"
-                            style={{ display: 'none' }}
-                            id="new-dept-photo-upload"
                             type="file"
-                            onChange={(e) => {
-                                const file = e.target.files[0];
-                                if (file) {
-                                    setNewDeptPhoto(file);
-                                }
-                            }}
+                            onChange={(e) => setNewDeptPhoto(e.target.files[0])}
                         />
-                        <label htmlFor="new-dept-photo-upload">
-                            <Button variant="outlined" component="span" fullWidth>
-                                {newDeptPhoto ? 'Фото выбрано' : 'Выбрать фото отделения'}
-                            </Button>
-                        </label>
-                        {newDeptPhoto && (
-                            <Box mt={2}>
-                                <img
-                                    src={URL.createObjectURL(newDeptPhoto)}
-                                    alt="Preview"
-                                    style={{ maxWidth: '200px', maxHeight: '200px', objectFit: 'cover' }}
-                                />
-                            </Box>
-                        )}
                     </div>
-                    <Button
-                        type="submit"
-                        variant="contained"
-                        color="primary"
-                        disabled={loading}
-                    >
-                        {loading ? <CircularProgress size={24} /> : 'Создать'}
-                    </Button>
                 </div>
+                <Button type="submit" variant="contained" color="primary" className="mt-3">
+                    Создать
+                </Button>
             </form>
 
-            {/* Таблица со списком отделений */}
             <Typography variant="h6" gutterBottom>
                 Список Отделений
             </Typography>
@@ -322,7 +283,7 @@ function DepartmentManagement() {
                 </TableContainer>
             )}
 
-            {/* Диалог редактирования отделения */}
+            {}
             <Dialog open={openEditDialog} onClose={handleCloseEditDialog} maxWidth="sm" fullWidth>
                 <DialogTitle>Редактировать Отделение</DialogTitle>
                 <DialogContent>
@@ -344,42 +305,19 @@ function DepartmentManagement() {
                     <div>
                         <input
                             accept="image/*"
-                            style={{ display: 'none' }}
-                            id="edit-dept-photo-upload"
                             type="file"
-                            onChange={(e) => {
-                                const file = e.target.files[0];
-                                if (file) {
-                                    setEditDeptPhoto(file);
-                                    setEditDeptPhotoPreview(URL.createObjectURL(file));
-                                }
-                            }}
+                            onChange={(e) => setEditDeptPhoto(e.target.files[0])}
                         />
-                        <label htmlFor="edit-dept-photo-upload">
-                            <Button variant="outlined" component="span" fullWidth>
-                                {editDeptPhoto ? 'Изменить фото' : 'Выбрать новое фото'}
-                            </Button>
-                        </label>
-                        {editDeptPhotoPreview && (
-                            <Box mt={2}>
-                                <img
-                                    src={editDeptPhotoPreview}
-                                    alt="Preview"
-                                    style={{ maxWidth: '100%', maxHeight: '200px', objectFit: 'cover', borderRadius: '4px' }}
-                                />
-                            </Box>
-                        )}
                     </div>
                 </DialogContent>
                 <DialogActions>
                     <Button onClick={handleCloseEditDialog}>Отмена</Button>
                     <Button onClick={handleUpdateDepartment} variant="contained" color="primary">
-                        Сохранить
+                        Обновить
                     </Button>
                 </DialogActions>
             </Dialog>
 
-            {/* Диалог подтверждения удаления отделения */}
             <Dialog open={openDeleteDialog} onClose={handleCloseDeleteDialog}>
                 <DialogTitle>Удалить Отделение</DialogTitle>
                 <DialogContent>

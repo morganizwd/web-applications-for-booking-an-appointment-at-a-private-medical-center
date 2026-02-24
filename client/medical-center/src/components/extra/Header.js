@@ -64,7 +64,7 @@ function Header() {
 
                         {isAuth && (
                             <>
-                                {/* Admin Dropdown */}
+                                {}
                                 {isAdminAuth && (
                                     <StyledNavDropdown title="Админ" id="admin-nav-dropdown">
                                         <NavDropdown.Item as={Link} to="/departments">
@@ -88,14 +88,14 @@ function Header() {
                                     </StyledNavDropdown>
                                 )}
 
-                                {/* Doctor Link */}
+                                {}
                                 {isDoctorAuth && (
                                     <Nav.Link as={Link} to="/doctor-dashboard">
                                         Панель Доктора
                                     </Nav.Link>
                                 )}
 
-                                {/* Patient Links */}
+                                {}
                                 {isPatientAuth && (
                                     <>
                                         <Nav.Link as={Link} to="/profile">
@@ -107,14 +107,14 @@ function Header() {
                                     </>
                                 )}
 
-                                {/* RAG Consultant - доступен всем авторизованным */}
+                                {}
                                 {isAuth && (
                                     <Nav.Link as={Link} to="/consultant">
                                         Консультант
                                     </Nav.Link>
                                 )}
 
-                                {/* Logout Button */}
+                                {}
                                 <StyledLogoutButton onClick={handleLogout}>
                                     Выйти
                                 </StyledLogoutButton>

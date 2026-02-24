@@ -23,7 +23,7 @@ const Consultant = () => {
     const token = localStorage.getItem('token');
 
     useEffect(() => {
-        // Загрузка списка услуг, для которых есть документы в базе знаний
+        
         const fetchServices = async () => {
             try {
                 const response = await axios.get('/rag/services');

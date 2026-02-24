@@ -8,9 +8,88 @@ class RAGService {
         this.chunkOverlap = 50; // Перекрытие между фрагментами
     }
 
-    /**
-     * Разбивает текст на фрагменты
-     */
+   
+    async backfillKnowledgeBase() {
+        try {
+            console.log('RAG backfill: проверка документов базы знаний...');
+
+            // Берём все активные документы
+            const documents = await KnowledgeDocument.findAll({
+                where: { isActive: true },
+            });
+
+            if (!documents || documents.length === 0) {
+                console.log('RAG backfill: активных документов не найдено');
+                return;
+            }
+
+            let processedCount = 0;
+            let skippedCount = 0;
+
+            for (const doc of documents) {
+                // Считаем количество чанков для документа
+                const chunkCount = await KnowledgeChunk.count({
+                    where: { documentId: doc.id },
+                });
+
+                // Если чанков нет, точно надо переработать документ
+                let needsRebuild = chunkCount === 0;
+
+                // Дополнительно проверим, есть ли чанки без embeddings
+                if (!needsRebuild && chunkCount > 0) {
+                    const chunks = await KnowledgeChunk.findAll({
+                        where: { documentId: doc.id },
+                        include: [
+                            {
+                                model: KnowledgeEmbedding,
+                                required: false,
+                            },
+                        ],
+                    });
+
+                    const chunksWithoutEmbedding = chunks.filter(
+                        (ch) => !ch.KnowledgeEmbedding
+                    );
+
+                    if (chunksWithoutEmbedding.length > 0) {
+                        needsRebuild = true;
+                        console.log(
+                            `RAG backfill: документ ID=${doc.id} имеет чанки без embeddings (${chunksWithoutEmbedding.length}), будет переработан`
+                        );
+                    }
+                }
+
+                if (!needsRebuild) {
+                    skippedCount++;
+                    continue;
+                }
+
+                console.log(
+                    `RAG backfill: переработка документа ID=${doc.id}, title="${doc.title}"`
+                );
+
+                
+                await this.uploadDocument(
+                    doc.title,
+                    doc.content,
+                    doc.documentType,
+                    doc.serviceId,
+                    doc.uploadedBy,
+                    doc.id
+                );
+
+                processedCount++;
+            }
+
+            console.log(
+                `RAG backfill завершён. Переработано документов: ${processedCount}, пропущено (уже в порядке): ${skippedCount}. Всего активных документов: ${documents.length}`
+            );
+        } catch (error) {
+            console.error('RAG backfill: ошибка при проверке/допроцессинге документов:', error);
+        }
+    }
+
+
     chunkText(text) {
         const chunks = [];
         let start = 0;
@@ -43,9 +122,7 @@ class RAGService {
         return chunks;
     }
 
-    /**
-     * Загружает документ в базу знаний
-     */
+    
     async uploadDocument(title, content, documentType, serviceId, uploadedBy, documentId = null) {
         try {
             let document;
@@ -116,9 +193,7 @@ class RAGService {
         }
     }
 
-    /**
-     * Семантический поиск по базе знаний
-     */
+    
     async semanticSearch(query, serviceId = null, topK = 5) {
         try {
             // Генерация embedding для запроса

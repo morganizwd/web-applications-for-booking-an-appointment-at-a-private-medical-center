@@ -109,8 +109,7 @@ function AuthForm() {
             const timer = setTimeout(() => {
                 setRegistrationSuccess(false);
                 setIsRegistration(false);
-                
-                // Очистка полей формы
+
                 setLogin('');
                 setPassword('');
                 setFirstName('');
@@ -122,23 +121,22 @@ function AuthForm() {
                 setPhoto(null);
                 setPhotoPreview(null);
                 setSelectedDepartment('');
-            }, 1500); // Задержка 1.5 секунды
+            }, 1500); 
 
             return () => clearTimeout(timer); 
         }
     }, [currentStatus, isRegistration]);
 
-    // Перенаправление после успешного логина
     useEffect(() => {
         if (!isRegistration && currentStatus === 'succeeded' && !currentError) {
-            // Проверяем, что токен сохранён
+            
             const token = localStorage.getItem('token');
             const savedRole = localStorage.getItem('role');
             
             console.log('Login successful, token:', token, 'role:', savedRole);
             
             if (token && savedRole) {
-                // Небольшая задержка для сохранения данных в Redux и обновления компонентов
+                
                 const timer = setTimeout(() => {
                     console.log('Navigating to dashboard for role:', savedRole);
                     switch (savedRole) {
@@ -225,8 +223,7 @@ function AuthForm() {
 
         return (
             <>
-                {/* Поля имя/фамилия — общие для doctor/patient, 
-                    но можно также для admin, если нужно */}
+                {}
                 <TextField
                     label="Имя"
                     variant="outlined"
@@ -246,7 +243,7 @@ function AuthForm() {
                     required
                 />
 
-                {/* Блок дополнительных полей для Doctor */}
+                {}
                 {role === 'doctor' && (
                     <>
                         <TextField
@@ -259,7 +256,6 @@ function AuthForm() {
                             required
                         />
 
-                        {/* Выбор отделения */}
                         <FormControl variant="outlined" fullWidth className="mb-3">
                             <InputLabel id="department-select-label">Отделение</InputLabel>
                             <Select
@@ -290,24 +286,9 @@ function AuthForm() {
                                 onChange={handlePhotoChange}
                             />
                         </Button>
-                        {photoPreview && (
-                            <Box
-                                component="img"
-                                src={photoPreview}
-                                alt="Preview"
-                                sx={{
-                                    width: 200,
-                                    height: 200,
-                                    objectFit: 'cover',
-                                    borderRadius: '8px',
-                                    mb: 3,
-                                }}
-                            />
-                        )}
                     </>
                 )}
 
-                {/* Блок дополнительных полей для Patient */}
                 {role === 'patient' && (
                     <>
                         <TextField
@@ -349,65 +330,19 @@ function AuthForm() {
                                 onChange={handlePhotoChange}
                             />
                         </Button>
-                        {photoPreview && (
-                            <Box
-                                component="img"
-                                src={photoPreview}
-                                alt="Preview"
-                                sx={{
-                                    width: 200,
-                                    height: 200,
-                                    objectFit: 'cover',
-                                    borderRadius: '8px',
-                                    mb: 3,
-                                }}
-                            />
-                        )}
                     </>
                 )}
             </>
+
         );
     };
 
     return (
-        <Box className="container mt-5">
-            <Typography variant="h4" component="h1" gutterBottom>
+        <Box sx={{ maxWidth: 400, mx: 'auto', mt: 4, p: 3 }}>
+            <Typography variant="h4" gutterBottom align="center">
                 {isRegistration ? 'Регистрация' : 'Вход'}
             </Typography>
 
-            <Box className="d-flex mb-3">
-                <Button
-                    variant={isRegistration ? 'contained' : 'outlined'}
-                    color="primary"
-                    onClick={() => setIsRegistration(true)}
-                    className="me-2"
-                >
-                    Регистрация
-                </Button>
-                <Button
-                    variant={!isRegistration ? 'contained' : 'outlined'}
-                    color="primary"
-                    onClick={() => setIsRegistration(false)}
-                >
-                    Вход
-                </Button>
-            </Box>
-
-            <FormControl fullWidth className="mb-3">
-                <InputLabel id="role-select-label">Роль</InputLabel>
-                <Select
-                    labelId="role-select-label"
-                    value={role}
-                    label="Роль"
-                    onChange={(e) => setRole(e.target.value)}
-                >
-                    <MenuItem value="admin">Администратор</MenuItem>
-                    <MenuItem value="doctor">Врач</MenuItem>
-                    <MenuItem value="patient">Пациент</MenuItem>
-                </Select>
-            </FormControl>
-
-            {/* Отображение уведомления об успешной регистрации */}
             {registrationSuccess && (
                 <Alert severity="success" className="mb-3">
                     Регистрация прошла успешно! Переход на форму входа...

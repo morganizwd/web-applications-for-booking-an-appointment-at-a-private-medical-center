@@ -95,7 +95,6 @@ export const GlobalStyles = createGlobalStyle`
         font-size: inherit;
     }
 
-    /* Современная прокрутка */
     ::-webkit-scrollbar {
         width: 12px;
         height: 12px;
@@ -117,7 +116,6 @@ export const GlobalStyles = createGlobalStyle`
         }
     }
 
-    /* Улучшенный фокус для доступности */
     *:focus-visible {
         outline: 2px solid ${theme.colors.primary};
         outline-offset: 2px;

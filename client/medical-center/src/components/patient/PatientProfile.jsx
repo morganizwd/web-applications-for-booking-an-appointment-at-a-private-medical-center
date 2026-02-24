@@ -1,4 +1,4 @@
-// src/components/PatientProfile.jsx
+
 
 import React, { useEffect, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
@@ -33,17 +33,14 @@ const PatientProfile = () => {
     const [previewImage, setPreviewImage] = useState(null);
     const [successMessage, setSuccessMessage] = useState('');
 
-    // --- Состояния для загрузки и отображения записей пациента ---
     const [appointments, setAppointments] = useState([]);
     const [loadingAppointments, setLoadingAppointments] = useState(false);
     const [appointmentsError, setAppointmentsError] = useState(null);
 
-    // --- Состояния для диагнозов ---
     const [diagnoses, setDiagnoses] = useState([]);
     const [loadingDiagnoses, setLoadingDiagnoses] = useState(false);
     const [diagnosesError, setDiagnosesError] = useState(null);
 
-    // --- Состояния для модального окна удаления ---
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [appointmentToDelete, setAppointmentToDelete] = useState(null);
     const [deleteError, setDeleteError] = useState('');
@@ -51,10 +48,10 @@ const PatientProfile = () => {
 
     useEffect(() => {
         if (patient) {
-            // Инициализация полей формы
+
             setFormData({
                 login: patient.login || '',
-                password: '', // Оставляем пустым, чтобы не отображать текущий пароль
+                password: '', 
                 firstName: patient.firstName || '',
                 lastName: patient.lastName || '',
                 phoneNumber: patient.phoneNumber || '',
@@ -65,15 +62,12 @@ const PatientProfile = () => {
             const imageUrl = patient.photo ? `${axios.defaults.baseURL}${patient.photo}` : null;
             setPreviewImage(imageUrl);
 
-            // Загружаем записи пациента
             fetchPatientAppointments(patient.id);
 
-            // Загружаем диагнозы пациента
             fetchPatientDiagnoses(patient.id);
         }
     }, [patient]);
 
-    // Функция для получения списка приёмов (appointments) пациента
     const fetchPatientAppointments = async (patientId) => {
         setLoadingAppointments(true);
         setAppointmentsError(null);
@@ -90,7 +84,6 @@ const PatientProfile = () => {
         }
     };
 
-    // Функция для получения диагнозов пациента
     const fetchPatientDiagnoses = async (patientId) => {
         setLoadingDiagnoses(true);
         setDiagnosesError(null);
@@ -114,6 +107,8 @@ const PatientProfile = () => {
             [name]: value,
         }));
     };
+
+    const handleInputChange = handleChange;
 
     const handleFileChange = (e) => {
         const file = e.target.files[0];
@@ -140,11 +135,10 @@ const PatientProfile = () => {
 
         const updatedData = { ...formData };
 
-        // Если пароль пустой — не обновляем его
         if (!updatedData.password) {
             delete updatedData.password;
         }
-        // Если фото не выбрано — не обновляем его
+
         if (!updatedData.photo) {
             delete updatedData.photo;
         }
@@ -153,18 +147,17 @@ const PatientProfile = () => {
             .unwrap()
             .then(() => {
                 setSuccessMessage('Данные успешно обновлены.');
-                // После обновления данных, возможно, стоит обновить изображения
+
                 if (updatedData.photo) {
-                    // Предположим, что сервер возвращает обновлённые данные пациента
-                    fetchPatientDiagnoses(patient.id); // Обновляем диагнозы
+
+                    fetchPatientDiagnoses(patient.id); 
                 }
             })
             .catch(() => {
-                // Ошибки уже обрабатываются в Redux Slice
+
             });
     };
 
-    // Функции для экспорта данных в Excel
     const exportTableToExcel = (data, headers, filename) => {
         const worksheet = XLSX.utils.json_to_sheet(data, { header: headers });
         const workbook = XLSX.utils.book_new();
@@ -174,10 +167,9 @@ const PatientProfile = () => {
         saveAs(dataBlob, `${filename}.xlsx`);
     };
 
-    // Функции для экспорта данных в Word (HTML-метод)
     const exportTableToWord = (data, headers, filename) => {
         try {
-            // Создаём HTML-таблицу
+
             let tableHTML = `
                 <table border="1" style="border-collapse: collapse; width: 100%;">
                     <thead>
@@ -201,7 +193,6 @@ const PatientProfile = () => {
                 </table>
             `;
 
-            // Оборачиваем таблицу в базовый HTML
             const htmlContent = `
                 <html>
                     <head>
@@ -215,7 +206,6 @@ const PatientProfile = () => {
                 </html>
             `;
 
-            // Создаём Blob с типом "application/msword"
             const blob = new Blob([htmlContent], {
                 type: 'application/msword;charset=utf-8',
             });
@@ -234,7 +224,6 @@ const PatientProfile = () => {
         }
     };
 
-    // Обработчики экспорта для записей
     const handleExportAppointmentsExcel = () => {
         const data = appointments.map((a) => ({
             ID: a.id,
@@ -265,7 +254,6 @@ const PatientProfile = () => {
         exportTableToWord(data, headers, 'Patient_Appointments');
     };
 
-    // Обработчики экспорта для диагнозов
     const handleExportDiagnosesExcel = () => {
         const data = diagnoses.map((d) => ({
             ID: d.id,
@@ -294,7 +282,6 @@ const PatientProfile = () => {
         exportTableToWord(data, headers, 'Patient_Diagnoses');
     };
 
-    // Функции для удаления записи
     const handleDeleteClick = (appointment) => {
         setAppointmentToDelete(appointment);
         setShowDeleteModal(true);
@@ -310,7 +297,7 @@ const PatientProfile = () => {
         try {
             await axios.delete(`/appointments/${appointmentToDelete.id}`);
             setSuccessMessage('Запись успешно удалена.');
-            // Обновляем список записей
+
             setAppointments(prevAppointments => prevAppointments.filter(a => a.id !== appointmentToDelete.id));
             setShowDeleteModal(false);
             setAppointmentToDelete(null);
@@ -373,98 +360,67 @@ const PatientProfile = () => {
                                     type="file"
                                     name="photo"
                                     accept="image/*"
-                                    onChange={handleFileChange}
+                                    onChange={(e) => setFormData({ ...formData, photo: e.target.files[0] })}
                                 />
                             </Form.Group>
                         </Col>
                         <Col md={8}>
-                            <Form.Group controlId="formLogin" className="mb-3">
-                                <Form.Label>Логин</Form.Label>
-                                <Form.Control
-                                    type="text"
-                                    name="login"
-                                    value={formData.login}
-                                    onChange={handleChange}
-                                    required
-                                />
-                            </Form.Group>
-
-                            <Form.Group controlId="formPassword" className="mb-3">
-                                <Form.Label>Новый Пароль</Form.Label>
-                                <Form.Control
-                                    type="password"
-                                    name="password"
-                                    value={formData.password}
-                                    onChange={handleChange}
-                                    placeholder="Оставьте пустым, если не хотите менять пароль"
-                                />
-                            </Form.Group>
-
                             <Form.Group controlId="formFirstName" className="mb-3">
                                 <Form.Label>Имя</Form.Label>
                                 <Form.Control
                                     type="text"
                                     name="firstName"
                                     value={formData.firstName}
-                                    onChange={handleChange}
+                                    onChange={handleInputChange}
                                     required
                                 />
                             </Form.Group>
-
                             <Form.Group controlId="formLastName" className="mb-3">
                                 <Form.Label>Фамилия</Form.Label>
                                 <Form.Control
                                     type="text"
                                     name="lastName"
                                     value={formData.lastName}
-                                    onChange={handleChange}
+                                    onChange={handleInputChange}
                                     required
                                 />
                             </Form.Group>
-
                             <Form.Group controlId="formPhoneNumber" className="mb-3">
-                                <Form.Label>Номер Телефона</Form.Label>
+                                <Form.Label>Номер телефона</Form.Label>
                                 <Form.Control
                                     type="text"
                                     name="phoneNumber"
                                     value={formData.phoneNumber}
-                                    onChange={handleChange}
-                                    placeholder="+7 (999) 999-99-99"
+                                    onChange={handleInputChange}
                                 />
                             </Form.Group>
-
                             <Form.Group controlId="formAddress" className="mb-3">
                                 <Form.Label>Адрес</Form.Label>
                                 <Form.Control
                                     type="text"
                                     name="address"
                                     value={formData.address}
-                                    onChange={handleChange}
-                                    placeholder="Город, улица, дом, квартира"
+                                    onChange={handleInputChange}
                                 />
                             </Form.Group>
-
                             <Form.Group controlId="formAge" className="mb-3">
                                 <Form.Label>Возраст</Form.Label>
                                 <Form.Control
                                     type="number"
                                     name="age"
                                     value={formData.age}
-                                    onChange={handleChange}
+                                    onChange={handleInputChange}
                                     required
-                                    min="0"
                                 />
                             </Form.Group>
-
-                            <Button variant="primary" type="submit" disabled={status === 'loading'}>
-                                {status === 'loading' ? 'Сохранение...' : 'Сохранить Изменения'}
+                            <Button type="submit" variant="primary">
+                                Сохранить изменения
                             </Button>
                         </Col>
                     </Row>
                 </Form>
             )}
 
-            {/* Блок с записями пациента */}
             <h3 className="mt-5">Мои Записи (Appointments)</h3>
             <Row className="align-items-center mb-3">
                 <Col></Col>
@@ -537,7 +493,7 @@ const PatientProfile = () => {
                 </Table>
             )}
 
-            {/* Блок с диагнозами пациента */}
+            {}
             <h3 className="mt-5">Мои Диагнозы</h3>
             <Row className="align-items-center mb-3">
                 <Col></Col>
@@ -598,7 +554,7 @@ const PatientProfile = () => {
                 </Table>
             )}
 
-            {/* Модальное окно подтверждения удаления */}
+            {}
             <Modal show={showDeleteModal} onHide={handleCancelDelete}>
                 <Modal.Header closeButton>
                     <Modal.Title>Подтверждение удаления</Modal.Title>

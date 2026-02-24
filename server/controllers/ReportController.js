@@ -25,7 +25,6 @@ class ReportController {
                 return res.status(400).json({ message: 'Тип отчёта и формат обязательны' });
             }
 
-            // Создание задания на генерацию отчёта
             const job = await ReportJob.create({
                 reportType,
                 format,
@@ -34,7 +33,6 @@ class ReportController {
                 createdBy: userId,
             });
 
-            // Асинхронная генерация отчёта
             this.generateReportAsync(job.id).catch(error => {
                 console.error('Ошибка генерации отчёта:', error);
             });
@@ -77,7 +75,6 @@ class ReportController {
                 throw new Error('Неподдерживаемый формат отчёта');
             }
 
-            // Сохранение информации о файле
             const stats = fs.statSync(filePath);
             await ReportFile.create({
                 jobId: job.id,
@@ -137,8 +134,7 @@ class ReportController {
                 throw new Error('Неизвестный тип отчёта');
         }
 
-        // Заголовок отчёта
-        const lastCol = String.fromCharCode(64 + headers.length); // A, B, C, etc.
+        const lastCol = String.fromCharCode(64 + headers.length); 
         worksheet.mergeCells(`A1:${lastCol}1`);
         const titleCell = worksheet.getCell('A1');
         titleCell.value = `${reportTitles[reportType] || 'Отчёт'} - ${new Date().toLocaleDateString('ru-RU')}`;
@@ -146,7 +142,6 @@ class ReportController {
         titleCell.alignment = { horizontal: 'center', vertical: 'middle' };
         worksheet.addRow([]);
 
-        // Добавление заголовков
         const headerRow = worksheet.addRow(headers);
         headerRow.font = { bold: true };
         headerRow.fill = {
@@ -156,12 +151,10 @@ class ReportController {
         };
         headerRow.alignment = { horizontal: 'center', vertical: 'middle' };
 
-        // Добавление данных
         data.forEach(row => {
             worksheet.addRow(headers.map(h => row[h] || ''));
         });
 
-        // Добавление подытогов для всех типов отчетов
         if (summary) {
             worksheet.addRow([]);
             const summaryRowNum = worksheet.rowCount + 1;
@@ -176,10 +169,8 @@ class ReportController {
             };
             worksheet.addRow([]);
 
-            // Общая статистика
             worksheet.addRow(['Всего записей:', summary.total]);
 
-            // Специфичные подытоги для каждого типа отчета
             if (reportType === 'appointments') {
                 worksheet.addRow(['Общая выручка:', `${summary.totalRevenue} руб.`]);
                 worksheet.addRow([]);
@@ -268,12 +259,10 @@ class ReportController {
             }
         }
 
-        // Автоматическая ширина колонок
         worksheet.columns.forEach(column => {
             column.width = 20;
         });
 
-        // Сохранение файла
         const reportsDir = path.join(__dirname, '../reports');
         if (!fs.existsSync(reportsDir)) {
             fs.mkdirSync(reportsDir, { recursive: true });
@@ -330,7 +319,6 @@ class ReportController {
             new Paragraph({ text: '' }),
         ];
 
-        // Создание таблицы данных
         const tableRows = [
             new TableRow({
                 children: headers.map(h =>
@@ -353,7 +341,6 @@ class ReportController {
 
         children.push(new Table({ rows: tableRows }));
 
-        // Добавление подытогов для всех типов отчетов
         if (summary) {
             children.push(new Paragraph({ text: '' }));
             children.push(new Paragraph({
@@ -365,7 +352,6 @@ class ReportController {
                 text: `Всего записей: ${summary.total}`,
             }));
 
-            // Специфичные подытоги для каждого типа отчета
             if (reportType === 'appointments') {
                 children.push(new Paragraph({
                     text: `Общая выручка: ${summary.totalRevenue} руб.`,
@@ -550,7 +536,6 @@ class ReportController {
             ],
         });
 
-        // Сохранение файла
         const reportsDir = path.join(__dirname, '../reports');
         if (!fs.existsSync(reportsDir)) {
             fs.mkdirSync(reportsDir, { recursive: true });
@@ -595,7 +580,6 @@ class ReportController {
             'Статус': a.status || 'scheduled',
         }));
 
-        // Вычисление подытогов
         const summary = {
             total: appointments.length,
             totalRevenue: appointments.reduce((sum, a) => sum + (a.Service ? a.Service.price : 0), 0),
@@ -605,11 +589,10 @@ class ReportController {
         };
 
         appointments.forEach(a => {
-            // По статусам
+            
             const status = a.status || 'scheduled';
             summary.byStatus[status] = (summary.byStatus[status] || 0) + 1;
 
-            // По врачам
             if (a.Doctor) {
                 const doctorName = `${a.Doctor.firstName} ${a.Doctor.lastName}`;
                 if (!summary.byDoctor[doctorName]) {
@@ -619,7 +602,6 @@ class ReportController {
                 summary.byDoctor[doctorName].revenue += a.Service ? a.Service.price : 0;
             }
 
-            // По услугам
             if (a.Service) {
                 const serviceName = a.Service.name;
                 if (!summary.byService[serviceName]) {
@@ -663,7 +645,6 @@ class ReportController {
             'Дата': new Date(d.createdAt).toLocaleDateString('ru-RU'),
         }));
 
-        // Вычисление подытогов
         const summary = {
             total: diagnoses.length,
             byDoctor: {},
@@ -673,24 +654,21 @@ class ReportController {
         };
 
         diagnoses.forEach(d => {
-            // По врачам
+            
             if (d.Doctor) {
                 const doctorName = `${d.Doctor.firstName} ${d.Doctor.lastName}`;
                 summary.byDoctor[doctorName] = (summary.byDoctor[doctorName] || 0) + 1;
             }
 
-            // По пациентам
             if (d.Patient) {
                 const patientName = `${d.Patient.firstName} ${d.Patient.lastName}`;
                 summary.byPatient[patientName] = (summary.byPatient[patientName] || 0) + 1;
             }
 
-            // По специализациям
             if (d.Doctor && d.Doctor.specialization) {
                 summary.bySpecialization[d.Doctor.specialization] = (summary.bySpecialization[d.Doctor.specialization] || 0) + 1;
             }
 
-            // По месяцам
             const month = new Date(d.createdAt).toLocaleDateString('ru-RU', { month: 'long', year: 'numeric' });
             summary.byMonth[month] = (summary.byMonth[month] || 0) + 1;
         });
@@ -725,7 +703,6 @@ class ReportController {
             'Конец': s.endTime,
         }));
 
-        // Вычисление подытогов
         const summary = {
             total: schedules.length,
             byDoctor: {},
@@ -734,25 +711,23 @@ class ReportController {
         };
 
         schedules.forEach(s => {
-            // По врачам
+            
             if (s.Doctor) {
                 const doctorName = `${s.Doctor.firstName} ${s.Doctor.lastName}`;
                 if (!summary.byDoctor[doctorName]) {
                     summary.byDoctor[doctorName] = { count: 0, totalHours: 0 };
                 }
                 summary.byDoctor[doctorName].count++;
-                // Вычисляем часы работы
+                
                 const start = new Date(`2000-01-01T${s.startTime}`);
                 const end = new Date(`2000-01-01T${s.endTime}`);
                 const hours = (end - start) / (1000 * 60 * 60);
                 summary.byDoctor[doctorName].totalHours += hours;
             }
 
-            // По дням недели
             const dayName = dayNames[s.dayOfWeek] || s.dayOfWeek;
             summary.byDayOfWeek[dayName] = (summary.byDayOfWeek[dayName] || 0) + 1;
 
-            // По специализациям
             if (s.Doctor && s.Doctor.specialization) {
                 summary.bySpecialization[s.Doctor.specialization] = (summary.bySpecialization[s.Doctor.specialization] || 0) + 1;
             }
@@ -784,7 +759,6 @@ class ReportController {
             'Возраст': p.age,
         }));
 
-        // Вычисление подытогов
         const summary = {
             total: patients.length,
             averageAge: 0,
@@ -803,8 +777,7 @@ class ReportController {
             let totalAge = 0;
             patients.forEach(p => {
                 totalAge += p.age || 0;
-                
-                // Группы по возрасту
+
                 if (p.age <= 18) summary.ageGroups['0-18']++;
                 else if (p.age <= 30) summary.ageGroups['19-30']++;
                 else if (p.age <= 50) summary.ageGroups['31-50']++;
@@ -844,7 +817,6 @@ class ReportController {
             'Отделение': d.Department ? d.Department.name : '',
         }));
 
-        // Вычисление подытогов
         const summary = {
             total: doctors.length,
             byDepartment: {},
@@ -852,11 +824,10 @@ class ReportController {
         };
 
         doctors.forEach(d => {
-            // По отделениям
+            
             const deptName = d.Department ? d.Department.name : 'Не указано';
             summary.byDepartment[deptName] = (summary.byDepartment[deptName] || 0) + 1;
 
-            // По специализациям
             if (d.specialization) {
                 summary.bySpecialization[d.specialization] = (summary.bySpecialization[d.specialization] || 0) + 1;
             }
@@ -889,7 +860,6 @@ class ReportController {
             'Отделение': s.Department ? s.Department.name : '',
         }));
 
-        // Вычисление подытогов
         const summary = {
             total: services.length,
             totalRevenue: 0,
@@ -911,7 +881,6 @@ class ReportController {
                 summary.totalRevenue += price;
                 summary.totalDuration += s.duration || 0;
 
-                // По отделениям
                 const deptName = s.Department ? s.Department.name : 'Не указано';
                 if (!summary.byDepartment[deptName]) {
                     summary.byDepartment[deptName] = { count: 0, totalPrice: 0 };
@@ -942,7 +911,6 @@ class ReportController {
                 where.status = status;
             }
 
-            // Пользователь видит только свои отчёты, если не админ
             if (req.user.primaryRole !== 'admin') {
                 where.createdBy = req.user.userId;
             }
@@ -975,7 +943,6 @@ class ReportController {
                 return res.status(404).json({ message: 'Задание не найдено' });
             }
 
-            // Проверка прав доступа
             if (req.user.primaryRole !== 'admin' && job.createdBy !== req.user.userId) {
                 return res.status(403).json({ message: 'Доступ запрещён' });
             }
@@ -999,7 +966,6 @@ class ReportController {
                 return res.status(404).json({ message: 'Файл отчёта не найден' });
             }
 
-            // Проверка прав доступа
             if (req.user.primaryRole !== 'admin' && job.createdBy !== req.user.userId) {
                 return res.status(403).json({ message: 'Доступ запрещён' });
             }
@@ -1021,7 +987,6 @@ class ReportController {
         }
     }
 
-    // Прямой экспорт приёмов без создания job
     async exportAppointments(req, res) {
         try {
             const { format, dateFrom, dateTo, doctorId, patientId, status } = req.query;
@@ -1050,7 +1015,6 @@ class ReportController {
                 fileName = result.fileName;
             }
 
-            // Используем абсолютный путь
             const absoluteFilePath = path.isAbsolute(filePath) 
                 ? filePath 
                 : path.join(__dirname, '..', filePath);
@@ -1063,8 +1027,7 @@ class ReportController {
                 if (err) {
                     console.error('Ошибка отправки файла:', err);
                 }
-                // Удаляем файл после отправки (опционально)
-                // fs.unlinkSync(absoluteFilePath);
+
             });
         } catch (error) {
             console.error('Ошибка экспорта приёмов:', error);
